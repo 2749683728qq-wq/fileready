@@ -55,28 +55,37 @@
 
 ---
 
-## Phase 1：设计系统与静态原型（规划中）
+## Phase 1：设计系统与静态原型（已完成）
 
 ### 目标
 建立组件库和首页/检查页静态原型
 
-### 任务列表
-1. 初始化 Next.js 项目（App Router + TypeScript + Tailwind CSS）
-2. 配置国际化路由（`/[locale]`）
-3. 创建全局布局（Header + Footer + 最大宽度容器）
-4. 创建设计令牌（CSS 变量 + Tailwind 配置）
-5. 实现基础 UI 组件：Button, Input, Select, Checkbox, RadioGroup
-6. 实现 FileDropzone 组件（含拖拽和点击）
-7. 实现 Alert, Progress, Dialog, Toast
-8. 实现 EmptyState, ErrorState, ResultSummary, BeforeAfterComparison
-9. 实现 AdContainer 占位组件
-10. 首页静态原型（含所有区块）
-11. 文件检查页静态原型
-12. 运行基础检查（类型检查、ESLint、构建）
-13. 三个视口截图验证
+### 已完成
+1. ✅ 初始化 Next.js 项目（App Router + TypeScript + Tailwind CSS）
+2. ✅ 配置国际化路由（`/[locale]`）
+3. ✅ 创建全局布局（Header + Footer + 最大宽度容器）
+4. ✅ 创建设计令牌（CSS 变量 + Tailwind 配置）
+5. ✅ 实现基础 UI 组件：Button, Input, Select, Checkbox, RadioGroup
+6. ✅ 实现 FileDropzone 组件（含拖拽和点击）
+7. ✅ 实现 Alert, Progress, Dialog, Toast
+8. ✅ 实现 EmptyState, ErrorState, ResultSummary, BeforeAfterComparison
+9. ✅ 实现 AdContainer 占位组件
+10. ✅ 首页静态原型（含所有区块）
+11. ✅ 文件检查页静态原型
+12. ✅ 运行基础检查（类型检查、ESLint、构建）
+13. ✅ 三个视口截图验证
 
-### 预计时间
-—
+### 新增依赖
+- `lucide-react`：统一线性图标
+- `@playwright/test`：端到端和视觉测试
+
+### 截图位置
+`/workspace/screenshots/phase-1/`
+
+### 已知问题
+- 当前所有页面只有英文版，中文本地化在 Phase 6 实现
+- 文件检查页为静态原型，文件读取为模拟数据
+- 尚未实现真实 AdSense 广告加载（仅预留组件）
 
 ---
 
@@ -85,6 +94,15 @@
 将在各阶段开始前细化。每个阶段完成后更新本文档。
 
 ---
+
+## Phase 0/1 测试结果记录
+
+| 检查项 | Phase 0 | Phase 1 |
+|--------|---------|---------|
+| TypeScript 类型检查 | ✅ 无代码 | ✅ 通过 |
+| ESLint | ✅ 无代码 | ✅ 通过 |
+| 生产构建 | ✅ 无代码 | ✅ 通过 |
+| Playwright 截图 | ✅ 无代码 | ✅ 10 张截图 |
 
 ## 风险清单
 
