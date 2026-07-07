@@ -1,62 +1,60 @@
+"use client";
+
 import Link from "next/link";
-
-interface FooterLinkGroup {
-  title: string;
-  links: { label: string; href: string }[];
-}
-
-const footerGroups: FooterLinkGroup[] = [
-  {
-    title: "Tools",
-    links: [
-      { label: "File Compliance Checker", href: "/en/check-file" },
-      { label: "Image Compressor", href: "/en/tools/image-compressor" },
-      { label: "Image Resizer", href: "/en/tools/image-resizer" },
-      { label: "Image Converter", href: "/en/tools/image-converter" },
-      { label: "Signature Processor", href: "/en/tools/signature-resizer" },
-      { label: "Image to PDF", href: "/en/tools/image-to-pdf" },
-      { label: "Merge PDF", href: "/en/tools/merge-pdf" },
-      { label: "Split PDF", href: "/en/tools/split-pdf" },
-      { label: "DPI Calculator", href: "/en/tools/dpi-calculator" },
-    ],
-  },
-  {
-    title: "Use Cases",
-    links: [
-      { label: "Job Applications", href: "/en/use-cases/job-applications" },
-      { label: "School Applications", href: "/en/use-cases/school-applications" },
-      { label: "Exam Registration", href: "/en/use-cases/exam-registration" },
-      { label: "Visa & Passport", href: "/en/use-cases/visa-passport" },
-      { label: "Government Forms", href: "/en/use-cases/government-forms" },
-      { label: "Everyday Office", href: "/en/use-cases/everyday-office" },
-    ],
-  },
-  {
-    title: "Resources",
-    links: [
-      { label: "Guides", href: "/en/guides" },
-      { label: "About", href: "/en/about" },
-      { label: "Contact", href: "/en/contact" },
-      { label: "Accessibility", href: "/en/accessibility" },
-    ],
-  },
-  {
-    title: "Legal",
-    links: [
-      { label: "Privacy Policy", href: "/en/privacy" },
-      { label: "Cookie Policy", href: "/en/cookies" },
-      { label: "Terms of Use", href: "/en/terms" },
-      { label: "Disclaimer", href: "/en/disclaimer" },
-      { label: "Advertising Disclosure", href: "/en/advertising-disclosure" },
-    ],
-  },
-];
+import { useT, useLocale } from "@/i18n";
+import { CookieSettings } from "@/components/ui/CookieSettings";
 
 export function Footer() {
+  const t = useT();
+  const locale = useLocale();
+
+  const footerGroups = [
+    {
+      title: t("footer.tools"),
+      links: [
+        { label: t("check.title"), href: `/${locale}/check-file` },
+        { label: t("compressor.title"), href: `/${locale}/tools/image-compressor` },
+        { label: t("resizer.title"), href: `/${locale}/tools/image-resizer` },
+        { label: t("converter.title"), href: `/${locale}/tools/image-converter` },
+        { label: t("signature.title"), href: `/${locale}/tools/signature-resizer` },
+        { label: t("img2pdf.title"), href: `/${locale}/tools/image-to-pdf` },
+        { label: t("merge.title"), href: `/${locale}/tools/merge-pdf` },
+        { label: t("split.title"), href: `/${locale}/tools/split-pdf` },
+        { label: t("dpi.title"), href: `/${locale}/tools/dpi-calculator` },
+      ],
+    },
+    {
+      title: t("footer.useCases"),
+      links: [
+        { label: t("usecase.job.title"), href: `/${locale}/use-cases/job-applications` },
+        { label: t("usecase.school.title"), href: `/${locale}/use-cases/school-applications` },
+        { label: t("usecase.exam.title"), href: `/${locale}/use-cases/exam-registration` },
+        { label: t("usecase.visa.title"), href: `/${locale}/use-cases/visa-passport` },
+        { label: t("usecase.gov.title"), href: `/${locale}/use-cases/government-forms` },
+        { label: t("usecase.office.title"), href: `/${locale}/use-cases/everyday-office` },
+      ],
+    },
+    {
+      title: t("footer.resources"),
+      links: [
+        { label: t("nav.guides"), href: `/${locale}/guides` },
+        { label: t("nav.about"), href: `/${locale}/about` },
+        { label: t("contact.title"), href: `/${locale}/contact` },
+      ],
+    },
+    {
+      title: t("footer.legal"),
+      links: [
+        { label: t("privacy.title"), href: `/${locale}/privacy` },
+        { label: t("terms.title"), href: `/${locale}/terms` },
+        { label: t("disclaimer.title"), href: `/${locale}/disclaimer` },
+      ],
+    },
+  ];
+
   return (
     <footer className="border-t border-border-default bg-surface-card">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        {/* Link groups */}
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           {footerGroups.map((group) => (
             <div key={group.title}>
@@ -79,27 +77,24 @@ export function Footer() {
           ))}
         </div>
 
-        {/* Bottom */}
         <div className="mt-10 border-t border-border-default pt-6">
           <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
             <p className="text-sm text-text-tertiary">
-              &copy; {new Date().getFullYear()} File Upload Assistant. All tools
-              process files locally in your browser.
+              &copy; {new Date().getFullYear()} FileReady.{" "}
+              {t("footer.copyright")}
             </p>
             <div className="flex items-center gap-4">
+              <CookieSettings />
               <Link
-                href="/en/privacy"
+                href={`/${locale}/privacy`}
                 className="text-sm text-text-tertiary underline-offset-2 hover:text-text-secondary hover:underline"
               >
-                Privacy &amp; Cookie Settings
+                {t("privacy.title")}
               </Link>
             </div>
           </div>
           <p className="mt-3 text-xs text-text-tertiary">
-            Disclaimer: Tools can only inspect and process readable file
-            properties. Final requirements are determined by the institution or
-            platform receiving your files. This site is not affiliated with any
-            government agency.
+            {t("footer.disclaimer")}
           </p>
         </div>
       </div>

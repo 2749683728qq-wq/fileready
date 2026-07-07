@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import {
   FileCheck,
   FileImage,
+  FileText,
   Info,
   ArrowRight,
+  ShieldCheck,
+  AlertTriangle,
+  CheckCircle2,
 } from "lucide-react";
 import {
   Button,
@@ -17,192 +20,240 @@ import {
   Alert,
   ErrorState,
   ResultSummary,
-  BeforeAfterComparison,
   AdContainer,
 } from "@/components/ui";
-import { formatBytes, formatDimensions } from "@/lib/utils";
-
-// --- Mock data for static prototype ---
-type AppState =
-  | "initial"
-  | "file-selected"
-  | "checking"
-  | "results"
-  | "error";
-
-const mockFileInfo = {
-  name: "passport-photo.jpg",
-  size: 2456789,
-  type: "image/jpeg",
-  width: 1200,
-  height: 1600,
-  dpi: 72,
-  exifOrientation: "Normal",
-  hasMetadata: true,
-};
-
-const mockResults = [
-  { label: "File format (JPEG)", status: "pass" as const, detail: "Required: JPG/JPEG" },
-  { label: "File extension (.jpg)", status: "pass" as const, detail: "Required: .jpg/.jpeg" },
-  { label: "File size", status: "fail" as const, detail: "2.3 MB > 500 KB max" },
-  { label: "Image width", status: "pass" as const, detail: "1200 px (max 2000 px)" },
-  { label: "Image height", status: "pass" as const, detail: "1600 px (max 2000 px)" },
-  { label: "Aspect ratio", status: "warning" as const, detail: "3:4 (recommended 3:4)" },
-  { label: "Orientation", status: "pass" as const, detail: "Portrait (required)" },
-  { label: "DPI information", status: "unknown" as const, detail: "72 DPI — digital uploads typically ignore DPI" },
-  { label: "Location metadata", status: "warning" as const, detail: "GPS data found — consider removing" },
-];
-
-const comparisonData = [
-  { label: "File size", before: "2.3 MB", after: "—", improved: false },
-  { label: "Dimensions", before: "1200 × 1600 px", after: "—", improved: false },
-  { label: "Format", before: "JPEG", after: "—", improved: false },
-];
+import { useFileChecker } from "@/hooks/useFileChecker";
+import { formatBytes } from "@/lib/utils";
+import { useT, useTArray, useLocale } from "@/i18n";
 
 export default function CheckFilePage() {
-  const [appState, setAppState] = useState<AppState>("initial");
-  const [fileName, setFileName] = useState<string | null>(null);
+  const t = useT();
+  const ta = useTArray();
+  const locale = useLocale();
+  const checker = useFileChecker();
+  const {
+    appState,
+    file,
+    fileName,
+    fileSize,
+    fileType,
+    result,
+    error,
+    requirements,
+    selectFile,
+    updateRequirements,
+    startCheck,
+    reset,
+    MAX_FILE_SIZE,
+  } = checker;
 
-  const handleFileSelect = (file: File) => {
-    setFileName(file.name);
-    setAppState("file-selected");
-  };
+  const howToSteps = ta("check.howToSteps");
+  const commonIssues = ta("check.commonIssuesItems");
 
-  const handleStartCheck = () => {
-    setAppState("checking");
-    // Simulate checking delay
-    setTimeout(() => setAppState("results"), 1500);
-  };
-
-  const handleReset = () => {
-    setFileName(null);
-    setAppState("initial");
-  };
+  const relatedTools = [
+    { label: t("compressor.title"), href: `/${locale}/tools/image-compressor` },
+    { label: t("resizer.title"), href: `/${locale}/tools/image-resizer` },
+    { label: t("converter.title"), href: `/${locale}/tools/image-converter` },
+    { label: t("metadata.title"), href: `/${locale}/tools/remove-image-metadata` },
+    { label: t("signature.title"), href: `/${locale}/tools/signature-resizer` },
+  ];
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-3xl" translate="no">
       {/* Breadcrumb */}
-      <nav className="mb-6 text-sm text-text-tertiary" aria-label="Breadcrumb">
-        <Link href="/en" className="hover:text-text-secondary">Home</Link>
-        <span className="mx-2">/</span>
-        <span className="text-text-secondary">File Compliance Checker</span>
+      <nav aria-label={t("breadcrumb.label")} className="mb-4 text-sm text-text-tertiary">
+        <ol className="flex items-center gap-1.5">
+          <li>
+            <Link href={`/${locale}`} className="hover:text-text-link">
+              {t("breadcrumb.home")}
+            </Link>
+          </li>
+          <li aria-hidden="true">/</li>
+          <li>
+            <Link href={`/${locale}/tools`} className="hover:text-text-link">
+              {t("breadcrumb.tools")}
+            </Link>
+          </li>
+          <li aria-hidden="true">/</li>
+          <li className="text-text-secondary" aria-current="page">
+            {t("check.title")}
+          </li>
+        </ol>
       </nav>
 
-      <h1 className="text-2xl font-bold text-text-primary sm:text-3xl">
-        File Compliance Checker
+      <h1 className="text-2xl font-bold tracking-tight text-text-primary sm:text-3xl">
+        {t("check.title")}
       </h1>
-      <p className="mt-2 text-text-secondary">
-        Upload your file and set your requirements. We&apos;ll check if your file
-        meets the specifications and tell you exactly what needs to be fixed.
-      </p>
+      <p className="mt-2 text-text-secondary">{t("check.desc")}</p>
 
       {/* Requirements Section */}
-      <section className="mt-8 rounded-lg border border-border-default bg-surface-card p-5">
-        <h2 className="mb-4 text-base font-semibold text-text-primary">
-          Upload Requirements
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Select
-            label="Allowed file type"
-            options={[
-              { value: "image", label: "Images only (JPG, PNG, WebP)" },
-              { value: "pdf", label: "PDF only" },
-              { value: "image-pdf", label: "Images and PDF" },
-            ]}
-            defaultValue="image"
-          />
-          <Input
-            label="Maximum file size"
-            type="number"
-            defaultValue="500"
-            hint="in KB"
-          />
-          <Input
-            label="Maximum width"
-            type="number"
-            defaultValue="2000"
-            hint="in pixels"
-          />
-          <Input
-            label="Maximum height"
-            type="number"
-            defaultValue="2000"
-            hint="in pixels"
-          />
-          <Select
-            label="Orientation"
-            options={[
-              { value: "any", label: "Any orientation" },
-              { value: "portrait", label: "Portrait only" },
-              { value: "landscape", label: "Landscape only" },
-            ]}
-            defaultValue="portrait"
-          />
-          <Select
-            label="Aspect ratio"
-            options={[
-              { value: "any", label: "Any ratio" },
-              { value: "3:4", label: "3:4" },
-              { value: "4:3", label: "4:3" },
-              { value: "1:1", label: "1:1 (Square)" },
-              { value: "custom", label: "Custom" },
-            ]}
-            defaultValue="3:4"
-          />
-        </div>
-        <div className="mt-4 space-y-2">
-          <Checkbox
-            label="Filename must not contain spaces"
-            defaultChecked
-          />
-          <Checkbox
-            label="Filename must not contain special characters"
-            defaultChecked
-          />
-        </div>
-      </section>
+      {(appState === "initial" || appState === "file-selected") && (
+        <section className="mt-8 rounded-lg border border-border-default bg-surface-card p-5">
+          <h2 className="mb-4 text-base font-semibold text-text-primary">
+            {t("check.requirements")}
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Select
+              label={t("check.allowedType")}
+              options={[
+                { value: "image", label: t("check.typeImages") },
+                { value: "pdf", label: t("check.typePdf") },
+                { value: "image-pdf", label: t("check.typeAll") },
+              ]}
+              value={
+                requirements.allowedTypes.includes("pdf") &&
+                requirements.allowedTypes.includes("image")
+                  ? "image-pdf"
+                  : requirements.allowedTypes[0] === "pdf"
+                    ? "pdf"
+                    : "image"
+              }
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === "image-pdf") {
+                  updateRequirements({ allowedTypes: ["image", "pdf"] });
+                } else if (val === "pdf") {
+                  updateRequirements({ allowedTypes: ["pdf"] });
+                } else {
+                  updateRequirements({ allowedTypes: ["image"] });
+                }
+              }}
+            />
+            <Input
+              label={t("check.maxSize")}
+              type="number"
+              value={String(requirements.maxSizeBytes / 1024)}
+              onChange={(e) => {
+                const kb = parseInt(e.target.value, 10) || 0;
+                updateRequirements({ maxSizeBytes: kb * 1024 });
+              }}
+              hint={t("check.sizeHint")}
+            />
+            <Input
+              label={t("check.maxWidth")}
+              type="number"
+              value={String(requirements.maxWidth)}
+              onChange={(e) =>
+                updateRequirements({
+                  maxWidth: parseInt(e.target.value, 10) || 0,
+                })
+              }
+              hint={t("check.dimHint")}
+            />
+            <Input
+              label={t("check.maxHeight")}
+              type="number"
+              value={String(requirements.maxHeight)}
+              onChange={(e) =>
+                updateRequirements({
+                  maxHeight: parseInt(e.target.value, 10) || 0,
+                })
+              }
+              hint={t("check.dimHint")}
+            />
+            <Select
+              label={t("check.orientation")}
+              options={[
+                { value: "any", label: t("check.anyOrientation") },
+                { value: "portrait", label: t("check.portraitOnly") },
+                { value: "landscape", label: t("check.landscapeOnly") },
+              ]}
+              value={requirements.orientation}
+              onChange={(e) =>
+                updateRequirements({
+                  orientation: e.target.value as "any" | "portrait" | "landscape",
+                })
+              }
+            />
+            <Select
+              label={t("check.aspectRatio")}
+              options={[
+                { value: "any", label: t("check.anyRatio") },
+                { value: "1:1", label: t("check.ratioSquare") },
+                { value: "4:3", label: t("check.ratio43") },
+                { value: "3:2", label: t("check.ratio32") },
+                { value: "16:9", label: t("check.ratio169") },
+              ]}
+              value={
+                requirements.allowedAspectRatios.length === 0
+                  ? "any"
+                  : requirements.allowedAspectRatios[0]
+              }
+              onChange={(e) => {
+                const val = e.target.value;
+                updateRequirements({
+                  allowedAspectRatios: val === "any" ? [] : [val],
+                });
+              }}
+            />
+          </div>
+          <div className="mt-4 space-y-2">
+            <Checkbox
+              label={t("check.noSpaces")}
+              checked={requirements.noSpacesInFilename}
+              onChange={(e) =>
+                updateRequirements({
+                  noSpacesInFilename: e.target.checked,
+                })
+              }
+            />
+            <Checkbox
+              label={t("check.noSpecialChars")}
+              checked={requirements.noSpecialCharsInFilename}
+              onChange={(e) =>
+                updateRequirements({
+                  noSpecialCharsInFilename: e.target.checked,
+                })
+              }
+            />
+          </div>
+        </section>
+      )}
 
       {/* File Upload Area */}
       <section className="mt-6">
         {appState === "initial" && (
           <FileDropzone
-            onFileSelect={handleFileSelect}
+            onFileSelect={selectFile}
             accept=".jpg,.jpeg,.png,.webp,.pdf"
-            maxSize={30 * 1024 * 1024}
+            maxSize={MAX_FILE_SIZE}
           />
         )}
 
         {/* File selected */}
-        {appState === "file-selected" && (
+        {appState === "file-selected" && file && (
           <div className="rounded-lg border border-border-default bg-surface-card p-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary-50 text-primary-600">
-                  <FileImage className="h-5 w-5" />
+                  {fileType === "pdf" ? (
+                    <FileText className="h-5 w-5" />
+                  ) : (
+                    <FileImage className="h-5 w-5" />
+                  )}
                 </div>
                 <div>
                   <p className="text-sm font-medium text-text-primary">
                     {fileName}
                   </p>
                   <p className="text-xs text-text-tertiary">
-                    {formatBytes(mockFileInfo.size)} ·{" "}
-                    {formatDimensions(mockFileInfo.width, mockFileInfo.height)} ·{" "}
-                    JPEG
+                    {formatBytes(fileSize ?? 0)} ·{" "}
+                    {fileType === "pdf" ? "PDF" : "Image"}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={handleReset}>
-                  Remove
+                <Button variant="ghost" size="sm" onClick={reset}>
+                  {t("button.remove")}
                 </Button>
-                <Button size="sm" onClick={handleStartCheck}>
-                  <FileCheck className="h-4 w-4" />
-                  Check File
+                <Button size="sm" onClick={startCheck}>
+                  <FileCheck className="mr-1.5 h-4 w-4" />
+                  {t("check.check")}
                 </Button>
               </div>
             </div>
             <p className="mt-3 text-xs text-text-tertiary">
-              Files are processed in your browser and are not uploaded to any server.
+              {t("privacy.localNotice")}
             </p>
           </div>
         )}
@@ -212,101 +263,100 @@ export default function CheckFilePage() {
           <div className="rounded-lg border border-border-default bg-surface-card p-8 text-center">
             <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-2 border-primary-200 border-t-primary-600" />
             <p className="text-sm font-medium text-text-primary">
-              Checking your file...
+              {t("check.checking")}
             </p>
             <p className="mt-1 text-xs text-text-tertiary">
-              Analyzing format, dimensions, size, and metadata
+              {t("check.analyzing")}
             </p>
           </div>
         )}
 
         {/* Results */}
-        {appState === "results" && (
+        {appState === "results" && result && file && (
           <div className="space-y-6">
-            {/* Summary */}
+            {/* File Summary */}
             <div className="rounded-lg border border-border-default bg-surface-card p-5">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary-50 text-primary-600">
-                    <FileImage className="h-5 w-5" />
+                    {fileType === "pdf" ? (
+                      <FileText className="h-5 w-5" />
+                    ) : (
+                      <FileImage className="h-5 w-5" />
+                    )}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-text-primary">{fileName}</p>
+                    <p className="text-sm font-medium text-text-primary">
+                      {fileName}
+                    </p>
                     <p className="text-xs text-text-tertiary">
-                      {formatBytes(mockFileInfo.size)} ·{" "}
-                      {formatDimensions(mockFileInfo.width, mockFileInfo.height)}
+                      {formatBytes(fileSize ?? file.size)} ·{" "}
+                      {fileType === "pdf" ? "PDF" : "Image"}
                     </p>
                   </div>
                 </div>
-                <Button variant="ghost" size="sm" onClick={handleReset}>
-                  Change file
+                <Button variant="ghost" size="sm" onClick={reset}>
+                  {t("button.changeFile")}
                 </Button>
               </div>
 
-              <Alert variant="warning" title="2 issues found">
-                Your file does not meet all requirements. See details below for
-                recommended fixes.
-              </Alert>
+              {result.allPassed ? (
+                <Alert variant="success" title={t("check.allPassed")}>
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  {t("check.allPassedDesc")}
+                  {result.warningCount > 0 &&
+                    ` ${result.warningCount} minor suggestion(s) below.`}
+                </Alert>
+              ) : (
+                <Alert variant="warning" title={`${t("check.issuesFound")}${result.failCount}`}>
+                  <AlertTriangle className="mr-2 h-4 w-4" />
+                  {t("check.issuesFoundDesc")}
+                </Alert>
+              )}
             </div>
 
             {/* Detailed Results */}
             <div>
               <h3 className="mb-3 text-sm font-semibold text-text-primary">
-                Detailed Check Results
+                {t("check.results")}
               </h3>
-              <ResultSummary items={mockResults} />
-            </div>
-
-            {/* Before/After (placeholder for when processing is done) */}
-            <div>
-              <h3 className="mb-3 text-sm font-semibold text-text-primary">
-                File Summary
-              </h3>
-              <BeforeAfterComparison rows={comparisonData} />
+              <ResultSummary items={result.items} />
             </div>
 
             {/* Recommended Actions */}
-            <div className="rounded-lg border border-primary-100 bg-primary-50 p-5">
-              <h3 className="flex items-center gap-2 text-sm font-semibold text-primary-800">
-                <Info className="h-4 w-4" />
-                Recommended Actions
-              </h3>
-              <ul className="mt-3 space-y-2">
-                <li className="flex items-start gap-2 text-sm text-primary-700">
-                  <ArrowRight className="mt-0.5 h-4 w-4 shrink-0" />
-                  <span>
-                    <strong>File too large:</strong> Compress to 500 KB or less
-                    using our{" "}
-                    <Link href="/en/tools/image-compressor" className="underline">
-                      Image Compressor
-                    </Link>
-                    .
-                  </span>
-                </li>
-                <li className="flex items-start gap-2 text-sm text-primary-700">
-                  <ArrowRight className="mt-0.5 h-4 w-4 shrink-0" />
-                  <span>
-                    <strong>GPS metadata found:</strong> Remove location data
-                    using{" "}
-                    <Link
-                      href="/en/tools/remove-image-metadata"
-                      className="underline"
+            {result.recommendations.length > 0 && (
+              <div className="rounded-lg border border-primary-100 bg-primary-50 p-5">
+                <h3 className="flex items-center gap-2 text-sm font-semibold text-primary-800">
+                  <Info className="h-4 w-4" />
+                  {t("check.recommendations")}
+                </h3>
+                <ul className="mt-3 space-y-2">
+                  {result.recommendations.map((rec, idx) => (
+                    <li
+                      key={idx}
+                      className="flex items-start gap-2 text-sm text-primary-700"
                     >
-                      Metadata Remover
-                    </Link>
-                    .
-                  </span>
-                </li>
-              </ul>
-            </div>
+                      <ArrowRight className="mt-0.5 h-4 w-4 shrink-0" />
+                      <span>
+                        <strong>{rec.toolLabel}:</strong> {rec.message}{" "}
+                        <Link
+                          href={rec.toolHref}
+                          className="underline hover:no-underline"
+                        >
+                          {t("check.openTool").replace("{tool}", rec.toolLabel)}
+                        </Link>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Processing notice */}
             <Alert variant="info">
               <p>
-                <strong>Important:</strong> These tools can only inspect and
-                process readable file properties. Final requirements are
-                determined by the institution or platform receiving your files.
-                This site is not affiliated with any government agency.
+                <strong>{t("check.important")}:</strong>{" "}
+                {t("check.notAffiliated")}
               </p>
             </Alert>
           </div>
@@ -315,78 +365,79 @@ export default function CheckFilePage() {
         {/* Error State */}
         {appState === "error" && (
           <ErrorState
-            message="We couldn't read this file. It may be corrupted or in an unsupported format."
-            onRetry={handleReset}
+            title={t("check.failed")}
+            message={error || t("check.failedDesc")}
+            onRetry={reset}
           />
         )}
       </section>
 
-      {/* Ad space — away from upload area */}
+      {/* Privacy Notice */}
+      <section className="mt-12 rounded-lg border border-success-100 bg-success-50 px-5 py-4">
+        <div className="flex items-start gap-3">
+          <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-success-600" />
+          <div>
+            <h3 className="text-sm font-semibold text-text-primary">
+              {t("privacy.staysOnDevice")}
+            </h3>
+            <p className="mt-1 text-xs text-text-secondary">
+              {t("privacy.localNotice")}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Ad */}
       <div className="mt-12">
         <AdContainer slotHeight="sm" />
       </div>
 
-      {/* Help content below */}
+      {/* Help content */}
       <section className="mt-12 border-t border-border-default pt-8">
         <h2 className="text-lg font-semibold text-text-primary">
-          How to use this tool
+          {t("check.howToTitle")}
         </h2>
         <ol className="mt-3 space-y-2 text-sm text-text-secondary">
-          <li>1. Set your upload requirements (format, size, dimensions, etc.).</li>
-          <li>2. Upload or drag and drop your file.</li>
-          <li>3. Click &quot;Check File&quot; to run the compliance check.</li>
-          <li>4. Review the results — each item shows Passed, Failed, or Needs Review.</li>
-          <li>5. Use the recommended tools to fix any issues.</li>
-          <li>6. Re-check your file after making changes.</li>
+          {howToSteps.map((step, idx) => (
+            <li key={idx}>{idx + 1}. {step}</li>
+          ))}
         </ol>
 
         <h3 className="mt-6 text-sm font-semibold text-text-primary">
-          Common issues and solutions
+          {t("check.commonIssuesTitle")}
         </h3>
         <ul className="mt-2 space-y-1.5 text-sm text-text-secondary">
-          <li>
-            <strong>File too large:</strong> Use the Image Compressor to reduce file size.
-          </li>
-          <li>
-            <strong>Wrong dimensions:</strong> Use the Image Resizer to adjust width and height.
-          </li>
-          <li>
-            <strong>Unsupported format:</strong> Use the Format Converter to change file type.
-          </li>
-          <li>
-            <strong>Metadata privacy:</strong> Use Metadata Remover to strip EXIF and GPS data.
-          </li>
+          {commonIssues.map((item, idx) => (
+            <li key={idx}>{item}</li>
+          ))}
         </ul>
 
-        <h3 className="mt-6 text-sm font-semibold text-text-primary">FAQ</h3>
+        <h3 className="mt-6 text-sm font-semibold text-text-primary">
+          {t("check.faqTitle")}
+        </h3>
         <dl className="mt-2 space-y-3 text-sm">
           <div>
             <dt className="font-medium text-text-primary">
-              Are my files uploaded to a server?
+              {t("check.faq1Q")}
             </dt>
             <dd className="text-text-secondary">
-              No. All checks and processing happen entirely in your browser.
-              Your files never leave your device.
+              {t("check.faq1A")}
             </dd>
           </div>
           <div>
             <dt className="font-medium text-text-primary">
-              What does &quot;Cannot determine&quot; mean?
+              {t("check.faq2Q")}
             </dt>
             <dd className="text-text-secondary">
-              Some file properties (like DPI for digital images) cannot be
-              reliably determined or may not apply to online uploads. These
-              items are marked for your awareness.
+              {t("check.faq2A")}
             </dd>
           </div>
           <div>
             <dt className="font-medium text-text-primary">
-              Does passing all checks guarantee my file will be accepted?
+              {t("check.faq3Q")}
             </dt>
             <dd className="text-text-secondary">
-              No. Our tools check technical file properties only. Final
-              acceptance depends on the receiving institution&apos;s review.
-              Always verify requirements with the official source.
+              {t("check.faq3A")}
             </dd>
           </div>
         </dl>
@@ -394,29 +445,24 @@ export default function CheckFilePage() {
 
       {/* Related tools */}
       <section className="mt-8 border-t border-border-default pt-8">
-        <h2 className="text-lg font-semibold text-text-primary">Related tools</h2>
+        <h2 className="text-lg font-semibold text-text-primary">
+          {t("check.relatedTitle")}
+        </h2>
         <div className="mt-3 flex flex-wrap gap-2">
-          {[
-            { label: "Image Compressor", href: "/en/tools/image-compressor" },
-            { label: "Image Resizer", href: "/en/tools/image-resizer" },
-            { label: "Format Converter", href: "/en/tools/image-converter" },
-            { label: "Metadata Remover", href: "/en/tools/remove-image-metadata" },
-          ].map((tool) => (
-            <a
+          {relatedTools.map((tool) => (
+            <Link
               key={tool.href}
               href={tool.href}
               className="rounded-md border border-border-default px-3 py-1.5 text-sm text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary"
             >
               {tool.label}
-            </a>
+            </Link>
           ))}
         </div>
       </section>
 
       {/* Last updated */}
-      <p className="mt-8 text-xs text-text-tertiary">
-        Last updated: {new Date().toISOString().split("T")[0]}
-      </p>
+      <p className="mt-8 text-xs text-text-tertiary">{t("lastUpdated")}</p>
     </div>
   );
 }

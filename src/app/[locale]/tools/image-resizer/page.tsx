@@ -42,6 +42,7 @@ import {
   type ResizeUnit,
 } from "@/lib/image";
 import { formatBytes, formatDimensions } from "@/lib/utils";
+import { useT, useTArray, useLocale } from "@/i18n";
 
 type AppState =
   | "initial"
@@ -57,6 +58,10 @@ type AppState =
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
 export default function ImageResizerPage() {
+  const t = useT();
+  const ta = useTArray();
+  const locale = useLocale();
+
   const [appState, setAppState] = useState<AppState>("initial");
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -111,12 +116,12 @@ export default function ImageResizerPage() {
     cleanup();
     if (f.size > MAX_FILE_SIZE) {
       setAppState("file-too-large");
-      setError("File too large. Maximum is 20 MB.");
+      setError(t("error.fileTooLargeWithMax") + " " + formatBytes(MAX_FILE_SIZE));
       return;
     }
     if (!isSupportedImage(f)) {
       setAppState("format-unsupported");
-      setError("Unsupported format. Use JPG, PNG, or WebP.");
+      setError(t("error.unsupportedFormatHint"));
       return;
     }
 
@@ -138,10 +143,10 @@ export default function ImageResizerPage() {
     };
     img.onerror = () => {
       setAppState("processing-failed");
-      setError("Failed to load image. The file may be corrupted.");
+      setError(t("error.failedToLoad"));
     };
     img.src = url;
-  }, [cleanup]);
+  }, [cleanup, t]);
 
   // Handle crop change
   const handleCropChange = useCallback((newCrop: CropRect) => {
@@ -257,23 +262,25 @@ export default function ImageResizerPage() {
     setResultUrl(null);
   }, [cleanup]);
 
+  const howToSteps = ta("resizer.howToSteps");
+  const keyboardItems = ta("resizer.keyboardItems");
+
   return (
     <div className="mx-auto max-w-4xl">
       {/* Breadcrumb */}
-      <nav className="mb-6 text-sm text-text-tertiary" aria-label="Breadcrumb">
-        <Link href="/en" className="hover:text-text-secondary">Home</Link>
+      <nav className="mb-6 text-sm text-text-tertiary" aria-label={t("breadcrumb.label")}>
+        <Link href={`/${locale}`} className="hover:text-text-secondary">{t("breadcrumb.home")}</Link>
         <span className="mx-2">/</span>
-        <Link href="/en" className="hover:text-text-secondary">Tools</Link>
+        <Link href={`/${locale}`} className="hover:text-text-secondary">{t("breadcrumb.tools")}</Link>
         <span className="mx-2">/</span>
-        <span className="text-text-secondary">Image Resizer &amp; Cropper</span>
+        <span className="text-text-secondary">{t("resizer.title")}</span>
       </nav>
 
       <h1 className="text-2xl font-bold text-text-primary sm:text-3xl">
-        Image Resizer &amp; Cropper
+        {t("resizer.title")}
       </h1>
       <p className="mt-2 text-text-secondary">
-        Crop, resize, rotate, and flip your images. Adjust dimensions in pixels,
-        millimeters, centimeters, or inches. All processing happens in your browser.
+        {t("resizer.desc")}
       </p>
 
       <section className="mt-8 space-y-6">
@@ -290,7 +297,7 @@ export default function ImageResizerPage() {
         {appState === "reading-file" && (
           <div className="rounded-lg border border-border-default bg-surface-card p-8 text-center">
             <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-2 border-primary-200 border-t-primary-600" />
-            <p className="text-sm font-medium text-text-primary">Reading file...</p>
+            <p className="text-sm font-medium text-text-primary">{t("state.readingFile")}</p>
           </div>
         )}
 
@@ -309,7 +316,7 @@ export default function ImageResizerPage() {
                 </span>
               </div>
               <Button variant="ghost" size="sm" onClick={handleChangeFile}>
-                <X className="h-4 w-4" /> Change
+                <X className="h-4 w-4" /> {t("button.change")}
               </Button>
             </div>
 
@@ -317,7 +324,7 @@ export default function ImageResizerPage() {
             <div className="rounded-lg border border-border-default bg-surface-card p-4">
               <h2 className="mb-3 text-sm font-semibold text-text-primary">
                 <Crop className="inline h-4 w-4 mr-1" />
-                Crop
+                {t("resizer.crop")}
               </h2>
               <div className="flex flex-col gap-4 lg:flex-row">
                 {/* Editor */}
@@ -340,7 +347,7 @@ export default function ImageResizerPage() {
                   {/* Aspect ratio */}
                   <div>
                     <label className="block mb-1.5 text-xs font-medium text-text-secondary">
-                      Aspect Ratio
+                      {t("resizer.aspectRatio")}
                     </label>
                     <Select
                       label=""
@@ -372,24 +379,24 @@ export default function ImageResizerPage() {
                   {/* Crop dimensions */}
                   <div>
                     <label className="block mb-1.5 text-xs font-medium text-text-secondary">
-                      Crop Size
+                      {t("resizer.cropSize")}
                     </label>
                     <div className="text-xs text-text-tertiary">
-                      {crop.width} × {crop.height} px
+                      {crop.width} × {crop.height} {t("resizer.pixels")}
                     </div>
                   </div>
 
                   {/* Rotate & Flip */}
                   <div>
                     <label className="block mb-1.5 text-xs font-medium text-text-secondary">
-                      Rotate &amp; Flip
+                      {t("resizer.rotateFlip")}
                     </label>
                     <div className="flex gap-1.5">
                       <button
                         onClick={() => setRotation((rotation + 90) % 360)}
                         className="rounded-md border border-border-default p-2 hover:bg-surface-hover"
-                        title="Rotate 90° clockwise"
-                        aria-label="Rotate 90 degrees clockwise"
+                        title={t("resizer.rotate90")}
+                        aria-label={t("resizer.rotate90")}
                       >
                         <RotateCw className="h-4 w-4 text-text-secondary" />
                       </button>
@@ -400,8 +407,8 @@ export default function ImageResizerPage() {
                             ? "border-primary-500 bg-primary-50 text-primary-600"
                             : "border-border-default text-text-secondary hover:bg-surface-hover"
                         }`}
-                        title="Flip horizontal"
-                        aria-label="Flip horizontal"
+                        title={t("resizer.flipHorizontal")}
+                        aria-label={t("resizer.flipHorizontal")}
                       >
                         <FlipHorizontal className="h-4 w-4" />
                       </button>
@@ -412,16 +419,16 @@ export default function ImageResizerPage() {
                             ? "border-primary-500 bg-primary-50 text-primary-600"
                             : "border-border-default text-text-secondary hover:bg-surface-hover"
                         }`}
-                        title="Flip vertical"
-                        aria-label="Flip vertical"
+                        title={t("resizer.flipVertical")}
+                        aria-label={t("resizer.flipVertical")}
                       >
                         <FlipVertical className="h-4 w-4" />
                       </button>
                       <button
                         onClick={resetCrop}
                         className="rounded-md border border-border-default p-2 text-text-secondary hover:bg-surface-hover"
-                        title="Reset crop"
-                        aria-label="Reset crop"
+                        title={t("resizer.resetCrop")}
+                        aria-label={t("resizer.resetCrop")}
                       >
                         <RotateCcw className="h-4 w-4" />
                       </button>
@@ -435,7 +442,7 @@ export default function ImageResizerPage() {
             <div className="rounded-lg border border-border-default bg-surface-card p-5">
               <h2 className="mb-3 text-sm font-semibold text-text-primary">
                 <Maximize className="inline h-4 w-4 mr-1" />
-                Output Dimensions
+                {t("resizer.outputDims")}
               </h2>
 
               {/* Unit selector */}
@@ -451,7 +458,7 @@ export default function ImageResizerPage() {
               {/* DPI input (when not px) */}
               {unit !== "px" && (
                 <div className="mb-3 flex items-center gap-2">
-                  <label className="text-xs text-text-secondary">DPI:</label>
+                  <label className="text-xs text-text-secondary">{t("resizer.dpiLabel")}</label>
                   <input
                     type="number"
                     value={dpi}
@@ -466,7 +473,7 @@ export default function ImageResizerPage() {
               {/* Width & Height */}
               <div className="flex items-center gap-3">
                 <div className="flex-1">
-                  <label className="block mb-1 text-xs text-text-tertiary">Width</label>
+                  <label className="block mb-1 text-xs text-text-tertiary">{t("resizer.width")}</label>
                   <input
                     type="number"
                     min="1"
@@ -484,14 +491,14 @@ export default function ImageResizerPage() {
                 <button
                   onClick={() => setLockAspect(!lockAspect)}
                   className="mt-4 rounded-md p-1.5 text-text-tertiary hover:bg-surface-hover hover:text-text-primary"
-                  title={lockAspect ? "Unlock aspect ratio" : "Lock aspect ratio"}
-                  aria-label={lockAspect ? "Unlock aspect ratio" : "Lock aspect ratio"}
+                  title={lockAspect ? t("resizer.unlockAspect") : t("resizer.lockAspect")}
+                  aria-label={lockAspect ? t("resizer.unlockAspect") : t("resizer.lockAspect")}
                 >
                   {lockAspect ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
                 </button>
 
                 <div className="flex-1">
-                  <label className="block mb-1 text-xs text-text-tertiary">Height</label>
+                  <label className="block mb-1 text-xs text-text-tertiary">{t("resizer.height")}</label>
                   <input
                     type="number"
                     min="1"
@@ -510,16 +517,16 @@ export default function ImageResizerPage() {
               {/* Dimensions info */}
               <div className="mt-3 text-xs text-text-tertiary">
                 {unit === "px" ? (
-                  <>Original: {formatDimensions(imgWidth, imgHeight)}</>
+                  <>{t("resizer.original")} {formatDimensions(imgWidth, imgHeight)}</>
                 ) : (
-                  <>At {dpi} DPI, {outWidth}px ≈ {(outWidth / dpi * 25.4).toFixed(1)}mm</>
+                  <>{t("resizer.atDpi").replace("{dpi}", String(dpi)).replace("{px}", String(outWidth)).replace("{mm}", (outWidth / dpi * 25.4).toFixed(1))}</>
                 )}
               </div>
 
               {/* Process button */}
               <Button size="lg" className="mt-4 w-full sm:w-auto" onClick={handleProcess}>
                 <Maximize className="h-4 w-4" />
-                Resize Image
+                {t("resizer.process")}
               </Button>
             </div>
           </div>
@@ -529,9 +536,9 @@ export default function ImageResizerPage() {
         {appState === "processing" && (
           <div className="rounded-lg border border-border-default bg-surface-card p-6 text-center">
             <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-2 border-primary-200 border-t-primary-600" />
-            <p className="text-sm font-medium text-text-primary">Processing...</p>
+            <p className="text-sm font-medium text-text-primary">{t("state.processing")}</p>
             <p className="mt-1 text-xs text-text-tertiary">
-              Applying crop, resize, and transformations
+              {t("resizer.applying")}
             </p>
           </div>
         )}
@@ -539,8 +546,8 @@ export default function ImageResizerPage() {
         {/* Done */}
         {appState === "processing-done" && result && (
           <div className="space-y-6">
-            <Alert variant="success" title="Image resized successfully!">
-              Your image has been processed.
+            <Alert variant="success" title={t("resizer.success")}>
+              {t("resizer.successDesc")}
             </Alert>
 
             <BeforeAfterComparison
@@ -554,11 +561,11 @@ export default function ImageResizerPage() {
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button size="lg" onClick={handleDownload}>
                 <Download className="h-5 w-5" />
-                Download Resized Image
+                {t("resizer.downloadResized")}
               </Button>
               <Button variant="outline" size="lg" onClick={handleChangeFile}>
                 <RotateCcw className="h-4 w-4" />
-                Process Another File
+                {t("button.processAnother")}
               </Button>
             </div>
           </div>
@@ -572,8 +579,8 @@ export default function ImageResizerPage() {
         {appState === "download-ready" && (
           <div className="rounded-lg border border-border-default bg-surface-card p-5 text-center">
             <CheckCircle2 className="mx-auto h-8 w-8 text-success-600" />
-            <p className="mt-2 text-sm font-medium">Download started</p>
-            <Button variant="outline" className="mt-4" onClick={handleChangeFile}>Process Another</Button>
+            <p className="mt-2 text-sm font-medium">{t("state.downloadStarted")}</p>
+            <Button variant="outline" className="mt-4" onClick={handleChangeFile}>{t("button.processAnotherShort")}</Button>
           </div>
         )}
       </section>
@@ -583,8 +590,8 @@ export default function ImageResizerPage() {
         <div className="flex items-start gap-3">
           <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-info-600" />
           <div className="text-sm text-info-700">
-            <p className="font-medium">Your files stay private</p>
-            <p className="mt-1">All processing happens in your browser. No upload to any server.</p>
+            <p className="font-medium">{t("privacy.private")}</p>
+            <p className="mt-1">{t("privacy.allLocal")}</p>
           </div>
         </div>
       </div>
@@ -593,60 +600,55 @@ export default function ImageResizerPage() {
 
       {/* Help content */}
       <section className="mt-12 border-t border-border-default pt-8">
-        <h2 className="text-lg font-semibold text-text-primary">How to use</h2>
+        <h2 className="text-lg font-semibold text-text-primary">{t("resizer.howToTitle")}</h2>
         <ol className="mt-3 space-y-2 text-sm text-text-secondary">
-          <li>1. Upload your image.</li>
-          <li>2. Drag the crop handles or choose a preset aspect ratio.</li>
-          <li>3. Set output dimensions in pixels, mm, cm, or inches.</li>
-          <li>4. Rotate or flip if needed.</li>
-          <li>5. Click &quot;Resize Image&quot; to process.</li>
-          <li>6. Download the result.</li>
+          {howToSteps.map((step, i) => (
+            <li key={i}>{i + 1}. {step}</li>
+          ))}
         </ol>
 
-        <h3 className="mt-6 text-sm font-semibold text-text-primary">Keyboard shortcuts</h3>
+        <h3 className="mt-6 text-sm font-semibold text-text-primary">{t("resizer.keyboardTitle")}</h3>
         <ul className="mt-2 space-y-1 text-sm text-text-secondary">
-          <li><strong>Arrow keys</strong>: Nudge crop by 1 pixel</li>
-          <li><strong>Shift + Arrow keys</strong>: Nudge crop by 10 pixels</li>
-          <li><strong>Tab</strong>: Focus the crop editor first</li>
+          {keyboardItems.map((item, i) => (
+            <li key={i}>{item}</li>
+          ))}
         </ul>
 
-        <h3 className="mt-6 text-sm font-semibold text-text-primary">FAQ</h3>
+        <h3 className="mt-6 text-sm font-semibold text-text-primary">{t("compressor.faqTitle")}</h3>
         <dl className="mt-2 space-y-3 text-sm">
           <div>
-            <dt className="font-medium text-text-primary">What DPI should I use?</dt>
+            <dt className="font-medium text-text-primary">{t("resizer.faq1Q")}</dt>
             <dd className="text-text-secondary">
-              For digital uploads, DPI is typically ignored — websites care about
-              pixel dimensions. Use 96 DPI for screen display or 300 DPI for print.
+              {t("resizer.faq1A")}
             </dd>
           </div>
           <div>
-            <dt className="font-medium text-text-primary">Will quality be lost?</dt>
+            <dt className="font-medium text-text-primary">{t("resizer.faq2Q")}</dt>
             <dd className="text-text-secondary">
-              Downscaling (making smaller) generally preserves quality. Upscaling
-              (making larger) may reduce sharpness.
+              {t("resizer.faq2A")}
             </dd>
           </div>
         </dl>
       </section>
 
       <section className="mt-8 border-t border-border-default pt-8">
-        <h2 className="text-lg font-semibold text-text-primary">Related tools</h2>
+        <h2 className="text-lg font-semibold text-text-primary">{t("related.title")}</h2>
         <div className="mt-3 flex flex-wrap gap-2">
           {[
-            { label: "Image Compressor", href: "/en/tools/image-compressor" },
-            { label: "Format Converter", href: "/en/tools/image-converter" },
-            { label: "Signature Processor", href: "/en/tools/signature-resizer" },
-            { label: "DPI Calculator", href: "/en/tools/dpi-calculator" },
-          ].map((t) => (
-            <Link key={t.href} href={t.href} className="rounded-md border border-border-default px-3 py-1.5 text-sm text-text-secondary hover:bg-surface-hover">
-              {t.label}
+            { label: t("compressor.title"), href: `/${locale}/tools/image-compressor` },
+            { label: t("converter.title"), href: `/${locale}/tools/image-converter` },
+            { label: t("signature.title"), href: `/${locale}/tools/signature-resizer` },
+            { label: t("dpi.title"), href: `/${locale}/tools/dpi-calculator` },
+          ].map((tool) => (
+            <Link key={tool.href} href={tool.href} className="rounded-md border border-border-default px-3 py-1.5 text-sm text-text-secondary hover:bg-surface-hover">
+              {tool.label}
             </Link>
           ))}
         </div>
       </section>
 
       <p className="mt-8 text-xs text-text-tertiary">
-        Last updated: {new Date().toISOString().split("T")[0]}
+        {t("lastUpdated")}: {new Date().toISOString().split("T")[0]}
       </p>
     </div>
   );

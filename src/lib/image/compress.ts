@@ -4,6 +4,8 @@
  * All processing happens in the browser — no upload to any server.
  */
 
+import { renderImageToBlob } from "./canvas";
+
 export type SupportedFormat = "image/jpeg" | "image/png" | "image/webp";
 export type CompressionStatus = "idle" | "processing" | "done" | "cancelled" | "error";
 
@@ -112,7 +114,7 @@ export async function compressImage(
 
   // Check if already small enough
   if (meta.sizeBytes <= targetSizeBytes) {
-    const blob = await canvasToBlob(meta, format, 0.95, 1, 1, signal);
+    const blob = await renderImageToBlob(meta, format, 0.95, 1, 1, signal);
     return {
       blob,
       sizeBytes: blob.size,
@@ -160,7 +162,7 @@ export async function compressImage(
       const quality = (lo + hi) / 2;
       iterations++;
 
-      const blob = await canvasToBlob(meta, format, quality, scale, scale, signal);
+      const blob = await renderImageToBlob(meta, format, quality, scale, scale, signal);
       const size = blob.size;
 
       // Track best result
@@ -198,7 +200,7 @@ export async function compressImage(
 
   // Ensure we have a result
   if (!bestBlob) {
-    bestBlob = await canvasToBlob(meta, format, 0.3, scale, scale, signal);
+    bestBlob = await renderImageToBlob(meta, format, 0.3, scale, scale, signal);
     bestResult = { blob: bestBlob, quality: 0.3, scale };
   }
 
@@ -216,83 +218,6 @@ export async function compressImage(
     durationMs: Math.round(performance.now() - startTime),
     originalMeta: meta,
   };
-}
-
-/**
- * Render image to a Blob via Canvas with given quality and scale.
- */
-async function canvasToBlob(
-  meta: ImageMeta,
-  format: SupportedFormat,
-  quality: number,
-  scaleX: number,
-  scaleY: number,
-  signal?: AbortSignal
-): Promise<Blob> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const url = URL.createObjectURL(meta.file);
-
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-
-      if (signal?.aborted) {
-        reject(new ImageError("Compression cancelled", "cancelled"));
-        return;
-      }
-
-      const w = Math.round(meta.width * scaleX);
-      const h = Math.round(meta.height * scaleY);
-
-      // Use OffscreenCanvas if available, fallback to regular canvas
-      const canvas = typeof OffscreenCanvas !== "undefined"
-        ? new OffscreenCanvas(w, h)
-        : document.createElement("canvas");
-
-      if (canvas instanceof HTMLCanvasElement) {
-        canvas.width = w;
-        canvas.height = h;
-      }
-
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        reject(new ImageError("Failed to create canvas context", "canvas_error"));
-        return;
-      }
-
-      // White background for JPEG (no transparency support)
-      if (format === "image/jpeg" && meta.hasTransparency) {
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, w, h);
-      }
-
-      ctx.drawImage(img, 0, 0, w, h);
-
-      const mimeType = format;
-
-      if (canvas instanceof OffscreenCanvas) {
-        canvas.convertToBlob({ type: mimeType, quality })
-          .then(resolve)
-          .catch(() => reject(new ImageError("Failed to encode image", "encode_failed")));
-      } else {
-        (canvas as HTMLCanvasElement).toBlob(
-          (blob) => {
-            if (blob) resolve(blob);
-            else reject(new ImageError("Failed to encode image", "encode_failed"));
-          },
-          mimeType,
-          quality
-        );
-      }
-    };
-
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new ImageError("Failed to load image for compression", "load_failed"));
-    };
-
-    img.src = url;
-  });
 }
 
 /**

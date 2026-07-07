@@ -13,4 +13,10 @@ export default defineConfig({
       use: { browserName: "chromium" },
     },
   ],
+  webServer: {
+    command: "cd /workspace && pnpm dev --port 3000",
+    url: "http://localhost:3000/en/tools/image-compressor/",
+    reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000,
+  },
 });

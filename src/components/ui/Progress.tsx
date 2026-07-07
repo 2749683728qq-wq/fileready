@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n";
 
 interface ProgressProps {
   value: number; // 0-100
@@ -8,6 +9,7 @@ interface ProgressProps {
 }
 
 export function Progress({ value, label, size = "md", className }: ProgressProps) {
+  const t = useT();
   const clampedValue = Math.min(100, Math.max(0, value));
 
   return (
@@ -23,7 +25,7 @@ export function Progress({ value, label, size = "md", className }: ProgressProps
         aria-valuenow={clampedValue}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-label={label || "Progress"}
+        aria-label={label || t("ui.progress")}
         className={cn(
           "w-full overflow-hidden rounded-full bg-surface-hover",
           size === "sm" ? "h-1.5" : "h-2.5"

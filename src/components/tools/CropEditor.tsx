@@ -4,6 +4,7 @@ import { useState, useRef, useCallback, useEffect, type MouseEvent, type Keyboar
 import { cn } from "@/lib/utils";
 import type { CropRect, AspectRatioPreset } from "@/lib/image";
 import { constrainCropRect, parseAspectRatio } from "@/lib/image";
+import { useT } from "@/i18n";
 
 interface CropEditorProps {
   /** Image source URL (blob URL) */
@@ -41,6 +42,7 @@ export function CropEditor({
   editorHeight = 450,
   className,
 }: CropEditorProps) {
+  const t = useT();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragHandle, setDragHandle] = useState<DragHandle>(null);
@@ -214,14 +216,14 @@ export function CropEditor({
       style={{ width: displayWidth, height: displayHeight }}
       tabIndex={0}
       onKeyDown={handleKeyDown}
-      aria-label="Crop editor. Use arrow keys to nudge, hold Shift for larger steps."
+      aria-label={t("ui.cropEditorHint")}
       role="img"
     >
       {/* Image — blob URL, cannot use next/image */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
-        alt="Crop preview"
+        alt={t("ui.cropPreview")}
         className="absolute inset-0 max-w-none"
         style={{ width: displayWidth, height: displayHeight }}
         draggable={false}

@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, type DragEvent, type ChangeEvent } from "react";
 import { Upload, FileWarning } from "lucide-react";
 import { cn, formatBytes } from "@/lib/utils";
+import { useT } from "@/i18n";
 
 interface FileDropzoneProps {
   onFileSelect: (file: File) => void;
@@ -19,6 +20,7 @@ export function FileDropzone({
   disabled = false,
   className,
 }: FileDropzoneProps) {
+  const t = useT();
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -28,13 +30,13 @@ export function FileDropzone({
       setError(null);
 
       if (maxSize && file.size > maxSize) {
-        setError(`File is too large. Maximum size is ${formatBytes(maxSize)}.`);
+        setError(`${t("error.fileTooLargeWithMax")} ${formatBytes(maxSize)}.`);
         return;
       }
 
       onFileSelect(file);
     },
-    [maxSize, onFileSelect]
+    [maxSize, onFileSelect, t]
   );
 
   const handleDragOver = (e: DragEvent) => {
@@ -86,7 +88,7 @@ export function FileDropzone({
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        aria-label="Choose a file or drag and drop"
+        aria-label={t("upload.dropzone")}
         className={cn(
           "flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-8 text-center transition-all duration-150",
           isDragging
@@ -106,12 +108,12 @@ export function FileDropzone({
         </div>
         <div>
           <p className="text-sm font-medium text-text-primary">
-            {isDragging ? "Drop your file here" : "Choose a file or drag and drop"}
+            {isDragging ? t("upload.dropHere") : t("upload.dropzone")}
           </p>
           <p className="mt-1 text-xs text-text-tertiary">
             {accept
-              ? `Accepted formats: ${accept.replace(/\./g, "").toUpperCase()}`
-              : "All supported formats accepted"}
+              ? `${t("upload.formats")}: ${accept.replace(/\./g, "").toUpperCase()}`
+              : t("upload.formatsAll")}
           </p>
         </div>
         <input

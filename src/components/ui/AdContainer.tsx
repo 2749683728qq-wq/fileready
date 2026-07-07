@@ -1,8 +1,11 @@
+"use client";
+
+import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n";
 
 interface AdContainerProps {
   className?: string;
-  /** Prevents CLS by reserving space */
   slotHeight?: "sm" | "md" | "lg";
 }
 
@@ -12,18 +15,20 @@ const heightMap: Record<string, string> = {
   lg: "min-h-[400px]",
 };
 
-/**
- * Placeholder component for AdSense ad slots.
- * In development and when ads are disabled, shows nothing.
- * When ads are enabled and approved, this will render the real AdSense unit.
- */
+function getStoredConsent(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("fua-cookie-consent");
+}
+
 export function AdContainer({ className, slotHeight = "md" }: AdContainerProps) {
+  const t = useT();
+  const [consent] = useState<string | null>(getStoredConsent);
+
   const adsEnabled = process.env.NEXT_PUBLIC_ADSENSE_ENABLED === "true";
 
-  // Don't render anything if ads are not enabled
   if (!adsEnabled) return null;
+  if (consent === "rejected") return null;
 
-  // When ads are enabled but no client ID is set, reserve space to prevent CLS
   return (
     <div
       className={cn(
@@ -31,9 +36,10 @@ export function AdContainer({ className, slotHeight = "md" }: AdContainerProps) 
         heightMap[slotHeight],
         className
       )}
-      aria-hidden="true"
+      aria-label={t("ad.placeholder")}
+      role="complementary"
     >
-      <span className="text-xs text-text-tertiary">Advertisement</span>
+      <span className="text-xs text-text-tertiary">{t("ad.placeholder")}</span>
     </div>
   );
 }

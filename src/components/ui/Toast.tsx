@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { X, CheckCircle2, AlertTriangle, XCircle, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n";
 
 type ToastVariant = "success" | "error" | "warning" | "info";
 
@@ -34,6 +35,7 @@ const variantStyles: Record<ToastVariant, string> = {
 };
 
 export function ToastContainer() {
+  const t = useT();
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   const addToast = useCallback((variant: ToastVariant, message: string) => {
@@ -61,7 +63,7 @@ export function ToastContainer() {
     <div
       className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2"
       aria-live="polite"
-      aria-label="Notifications"
+      aria-label={t("ui.notifications")}
     >
       {toasts.map((toast) => {
         const Icon = variantIcon[toast.variant];
@@ -79,7 +81,7 @@ export function ToastContainer() {
             <button
               onClick={() => removeToast(toast.id)}
               className="shrink-0 rounded p-0.5 hover:bg-black/10 transition-colors"
-              aria-label="Dismiss"
+              aria-label={t("ui.dismiss")}
             >
               <X className="h-3.5 w-3.5" />
             </button>

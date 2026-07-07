@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n";
 
 interface ComparisonRow {
   label: string;
@@ -13,13 +14,15 @@ interface BeforeAfterComparisonProps {
 }
 
 export function BeforeAfterComparison({ rows, className }: BeforeAfterComparisonProps) {
+  const t = useT();
+
   return (
     <div className={cn("overflow-hidden rounded-lg border border-border-default", className)}>
       {/* Header */}
       <div className="grid grid-cols-3 gap-4 bg-surface-hover px-4 py-2.5 text-xs font-semibold uppercase text-text-tertiary">
-        <div>Property</div>
-        <div>Before</div>
-        <div>After</div>
+        <div>{t("ui.property")}</div>
+        <div>{t("ui.before")}</div>
+        <div>{t("ui.after")}</div>
       </div>
 
       {/* Rows */}

@@ -22,8 +22,12 @@ import {
 import { useImageCompressor } from "@/hooks/useImageCompressor";
 import { formatBytes, formatDimensions } from "@/lib/utils";
 import { TARGET_SIZE_PRESETS } from "@/lib/image";
+import { useT, useTArray, useLocale } from "@/i18n";
 
 export default function ImageCompressorPage() {
+  const t = useT();
+  const ta = useTArray();
+  const locale = useLocale();
   const compressor = useImageCompressor();
   const {
     appState,
@@ -43,23 +47,26 @@ export default function ImageCompressorPage() {
     MAX_FILE_SIZE,
   } = compressor;
 
+  const howToSteps = ta("compressor.howToSteps");
+  const whatHappensItems = ta("compressor.whatHappensItems");
+  const commonIssuesItems = ta("compressor.commonIssuesItems");
+
   return (
     <div className="mx-auto max-w-3xl">
       {/* Breadcrumb */}
-      <nav className="mb-6 text-sm text-text-tertiary" aria-label="Breadcrumb">
-        <Link href="/en" className="hover:text-text-secondary">Home</Link>
+      <nav className="mb-6 text-sm text-text-tertiary" aria-label={t("breadcrumb.label")}>
+        <Link href={`/${locale}`} className="hover:text-text-secondary">{t("breadcrumb.home")}</Link>
         <span className="mx-2">/</span>
-        <Link href="/en" className="hover:text-text-secondary">Tools</Link>
+        <Link href={`/${locale}`} className="hover:text-text-secondary">{t("breadcrumb.tools")}</Link>
         <span className="mx-2">/</span>
-        <span className="text-text-secondary">Image Compressor</span>
+        <span className="text-text-secondary">{t("compressor.title")}</span>
       </nav>
 
       <h1 className="text-2xl font-bold text-text-primary sm:text-3xl">
-        Image Compressor
+        {t("compressor.title")}
       </h1>
       <p className="mt-2 text-text-secondary">
-        Compress JPG, PNG, and WebP images to a target file size. Processing
-        happens entirely in your browser — your files are never uploaded.
+        {t("compressor.desc")}
       </p>
 
       {/* === TOOL OPERATION AREA === */}
@@ -79,7 +86,7 @@ export default function ImageCompressorPage() {
         {appState === "reading-file" && (
           <div className="rounded-lg border border-border-default bg-surface-card p-8 text-center">
             <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-2 border-primary-200 border-t-primary-600" />
-            <p className="text-sm font-medium text-text-primary">Reading file...</p>
+            <p className="text-sm font-medium text-text-primary">{t("state.readingFile")}</p>
           </div>
         )}
 
@@ -105,7 +112,7 @@ export default function ImageCompressorPage() {
                         {formatBytes(meta.sizeBytes)} ·{" "}
                         {formatDimensions(meta.width, meta.height)} ·{" "}
                         {meta.format.split("/")[1]?.toUpperCase()}
-                        {meta.hasTransparency && " · Transparency"}
+                        {meta.hasTransparency && ` · ${t("compressor.transparency")}`}
                         {meta.dpi && ` · ${meta.dpi} DPI`}
                       </p>
                     </div>
@@ -113,7 +120,7 @@ export default function ImageCompressorPage() {
                   {appState === "file-ready" && (
                     <Button variant="ghost" size="sm" onClick={changeFile}>
                       <X className="h-4 w-4" />
-                      Change
+                      {t("button.change")}
                     </Button>
                   )}
                 </div>
@@ -121,9 +128,7 @@ export default function ImageCompressorPage() {
                 {/* Already small enough? */}
                 {meta.sizeBytes <= targetSizeBytes && appState === "file-ready" && (
                   <Alert variant="info" className="mt-3">
-                    This file is already smaller than the target size. No
-                    compression needed. You can still compress to a smaller
-                    target if needed.
+                    {t("compressor.alreadySmall")}
                   </Alert>
                 )}
               </div>
@@ -131,18 +136,20 @@ export default function ImageCompressorPage() {
 
             {/* Target size selector */}
             {appState === "file-ready" && (
-              <div className="rounded-lg border border-border-default bg-surface-card p-5">
+              <div className="rounded-lg border border-border-default bg-surface-card p-5" translate="no">
                 <h2 className="mb-3 text-sm font-semibold text-text-primary">
-                  Target file size
+                  {t("compressor.targetSize")}
                 </h2>
                 <div className="flex flex-wrap gap-2 mb-3">
                   {TARGET_SIZE_PRESETS.map((preset) => (
                     <button
                       key={preset.bytes}
+                      type="button"
                       onClick={() => setTargetSize(preset.bytes)}
-                      className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                      aria-pressed={targetSizeBytes === preset.bytes}
+                      className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus:ring-2 focus:ring-primary-500 ${
                         targetSizeBytes === preset.bytes
-                          ? "bg-primary-600 text-white"
+                          ? "bg-primary-600 text-white shadow-sm"
                           : "border border-border-default text-text-secondary hover:bg-surface-hover"
                       }`}
                     >
@@ -151,7 +158,7 @@ export default function ImageCompressorPage() {
                   ))}
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-text-tertiary">Custom:</span>
+                  <span className="text-sm text-text-tertiary">{t("compressor.custom")}:</span>
                   <input
                     type="number"
                     min="1"
@@ -178,7 +185,7 @@ export default function ImageCompressorPage() {
                   onClick={startCompression}
                 >
                   <Zap className="h-4 w-4" />
-                  Compress to {formatBytes(targetSizeBytes)} or less
+                  {t("compressor.compressTo")} {formatBytes(targetSizeBytes)} {t("compressor.orLess")}
                 </Button>
               </div>
             )}
@@ -188,13 +195,13 @@ export default function ImageCompressorPage() {
         {/* Processing */}
         {appState === "processing" && (
           <div className="rounded-lg border border-border-default bg-surface-card p-6">
-            <Progress value={progress} label="Compressing..." className="mb-4" />
+            <Progress value={progress} label={t("compressor.compressing")} className="mb-4" />
             <p className="text-xs text-text-tertiary text-center">
-              Finding optimal quality settings... This usually takes a few seconds.
+              {t("compressor.findingQuality")}
             </p>
             <div className="mt-4 text-center">
               <Button variant="outline" size="sm" onClick={cancelCompression}>
-                Cancel
+                {t("button.cancel")}
               </Button>
             </div>
           </div>
@@ -203,14 +210,13 @@ export default function ImageCompressorPage() {
         {/* Cancelled */}
         {appState === "processing-cancelled" && (
           <div className="rounded-lg border border-border-default bg-surface-card p-5">
-            <Alert variant="warning" title="Compression cancelled">
-              Your original file is unchanged. You can adjust settings and try
-              again.
+            <Alert variant="warning" title={t("compressor.cancelled")}>
+              {t("compressor.cancelledDesc")}
             </Alert>
             <div className="mt-4">
               <Button variant="primary" onClick={startCompression}>
                 <RotateCcw className="h-4 w-4" />
-                Try Again
+                {t("button.retry")}
               </Button>
             </div>
           </div>
@@ -220,13 +226,13 @@ export default function ImageCompressorPage() {
         {appState === "processing-done" && result && meta && (
           <div className="space-y-6">
             {/* Success banner */}
-            <Alert variant="success" title="Compression complete!">
-              Your image has been compressed from{" "}
-              <strong>{formatBytes(meta.sizeBytes)}</strong> to{" "}
-              <strong>{formatBytes(result.sizeBytes)}</strong>
+            <Alert variant="success" title={t("compressor.complete")}>
+              {t("compressor.completeDesc")
+                .replace("{before}", formatBytes(meta.sizeBytes))
+                .replace("{after}", formatBytes(result.sizeBytes))}
               {result.sizeBytes > targetSizeBytes
-                ? ` (close to target of ${formatBytes(targetSizeBytes)})`
-                : ` (within target of ${formatBytes(targetSizeBytes)})`}
+                ? ` (${t("compressor.closeToTarget").replace("{target}", formatBytes(targetSizeBytes))})`
+                : ` (${t("compressor.withinTarget").replace("{target}", formatBytes(targetSizeBytes))})`}
               .
             </Alert>
 
@@ -234,30 +240,30 @@ export default function ImageCompressorPage() {
             <BeforeAfterComparison
               rows={[
                 {
-                  label: "File size",
+                  label: t("compressor.fileSize"),
                   before: formatBytes(meta.sizeBytes),
                   after: formatBytes(result.sizeBytes),
                   improved: true,
                 },
                 {
-                  label: "Dimensions",
+                  label: t("compressor.dimensions"),
                   before: formatDimensions(meta.width, meta.height),
                   after: formatDimensions(result.width, result.height),
                   improved: result.width !== meta.width || result.height !== meta.height,
                 },
                 {
-                  label: "Format",
+                  label: t("compressor.format"),
                   before: meta.format.split("/")[1]?.toUpperCase() || "—",
                   after: result.format.split("/")[1]?.toUpperCase() || "—",
                 },
                 {
-                  label: "Quality level",
+                  label: t("compressor.qualityLevel"),
                   before: "100%",
                   after: `${result.quality}%`,
                   improved: true,
                 },
                 {
-                  label: "Processing time",
+                  label: t("compressor.processingTime"),
                   before: "—",
                   after: `${(result.durationMs / 1000).toFixed(1)}s`,
                 },
@@ -267,24 +273,21 @@ export default function ImageCompressorPage() {
             {/* Compression ratio */}
             <div className="rounded-lg border border-success-100 bg-success-50 p-4 text-center">
               <p className="text-sm text-success-700">
-                Reduced by{" "}
-                <strong>
-                  {Math.round(
+                {t("compressor.reducedBy").replace(
+                  "{percent}",
+                  Math.round(
                     ((meta.sizeBytes - result.sizeBytes) / meta.sizeBytes) * 100
-                  )}
-                  %
-                </strong>
+                  ).toString()
+                )}
                 {result.iterations > 1 &&
-                  ` after ${result.iterations} quality iterations`}
+                  ` ${t("compressor.iterations").replace("{n}", result.iterations.toString())}`}
               </p>
             </div>
 
             {/* Transparency warning */}
             {meta.hasTransparency && result.format === "image/jpeg" && (
               <Alert variant="warning">
-                The original image had transparent areas. JPEG does not support
-                transparency — transparent areas have been filled with white.
-                Export as PNG to preserve transparency.
+                {t("compressor.transparencyWarning")}
               </Alert>
             )}
 
@@ -292,11 +295,11 @@ export default function ImageCompressorPage() {
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button size="lg" onClick={downloadResult}>
                 <Download className="h-5 w-5" />
-                Download Compressed Image
+                {t("compressor.downloadCompressed")}
               </Button>
               <Button variant="outline" size="lg" onClick={reset}>
                 <RotateCcw className="h-4 w-4" />
-                Compress Another File
+                {t("compressor.compressAnother")}
               </Button>
             </div>
           </div>
@@ -307,19 +310,19 @@ export default function ImageCompressorPage() {
           <div className="rounded-lg border border-border-default bg-surface-card p-5 text-center">
             <CheckCircle2 className="mx-auto h-8 w-8 text-success-600" />
             <p className="mt-2 text-sm font-medium text-text-primary">
-              Download started
+              {t("state.downloadStarted")}
             </p>
             <p className="mt-1 text-xs text-text-tertiary">
-              If the download didn&apos;t start,{" "}
+              {t("state.downloadNotStarted")}{" "}
               <button onClick={downloadResult} className="text-text-link underline">
-                click here
+                {t("state.clickHere")}
               </button>
               .
             </p>
             <div className="mt-4">
               <Button variant="outline" onClick={reset}>
                 <RotateCcw className="h-4 w-4" />
-                Compress Another File
+                {t("compressor.compressAnother")}
               </Button>
             </div>
           </div>
@@ -334,18 +337,15 @@ export default function ImageCompressorPage() {
         )}
 
         {appState === "file-too-large" && (
-          <Alert variant="error" title="File too large">
+          <Alert variant="error" title={t("error.fileTooLarge")}>
             {error}
           </Alert>
         )}
 
         {appState === "format-unsupported" && (
-          <Alert variant="error" title="Unsupported format">
+          <Alert variant="error" title={t("error.unsupportedFormat")}>
             {error}
-            <p className="mt-2">
-              Supported formats: JPG, JPEG, PNG, WebP. For HEIC files, please
-              convert them first using another tool.
-            </p>
+            <p className="mt-2">{t("compressor.unsupportedHint")}</p>
           </Alert>
         )}
       </section>
@@ -355,12 +355,8 @@ export default function ImageCompressorPage() {
         <div className="flex items-start gap-3">
           <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-info-600" />
           <div className="text-sm text-info-700">
-            <p className="font-medium">Your files stay private</p>
-            <p className="mt-1">
-              All compression happens directly in your browser. Your images are
-              never uploaded to any server. We cannot see, access, or store your
-              files.
-            </p>
+            <p className="font-medium">{t("privacy.private")}</p>
+            <p className="mt-1">{t("privacy.privateDesc")}</p>
           </div>
         </div>
       </div>
@@ -373,84 +369,56 @@ export default function ImageCompressorPage() {
       {/* Help content */}
       <section className="mt-12 border-t border-border-default pt-8">
         <h2 className="text-lg font-semibold text-text-primary">
-          How to compress your image
+          {t("compressor.howToTitle")}
         </h2>
         <ol className="mt-3 space-y-2 text-sm text-text-secondary">
-          <li>1. Upload or drag and drop your JPG, PNG, or WebP image.</li>
-          <li>2. Choose a target size from the presets or enter a custom size in KB.</li>
-          <li>3. Click &quot;Compress&quot; — the tool finds the best quality setting automatically.</li>
-          <li>4. Review the before-and-after comparison.</li>
-          <li>5. Download your compressed image.</li>
+          {howToSteps.map((step, i) => (
+            <li key={i}>{i + 1}. {step}</li>
+          ))}
         </ol>
 
         <h3 className="mt-6 text-sm font-semibold text-text-primary">
-          What happens during compression?
+          {t("compressor.whatHappensTitle")}
         </h3>
         <ul className="mt-2 space-y-1.5 text-sm text-text-secondary">
-          <li>
-            <strong>Quality reduction:</strong> The tool gradually reduces JPEG/WebP
-            quality until the file is within the target size.
-          </li>
-          <li>
-            <strong>Dimension reduction (if needed):</strong> If quality alone
-            isn&apos;t enough, the image dimensions are slightly reduced.
-          </li>
-          <li>
-            <strong>Smart optimization:</strong> The algorithm finds the best
-            balance between file size and visual quality.
-          </li>
+          {whatHappensItems.map((item, i) => (
+            <li key={i}>{item}</li>
+          ))}
         </ul>
 
         <h3 className="mt-6 text-sm font-semibold text-text-primary">
-          Common issues
+          {t("compressor.commonIssuesTitle")}
         </h3>
         <ul className="mt-2 space-y-1.5 text-sm text-text-secondary">
-          <li>
-            <strong>Can&apos;t reach target size:</strong> Very large images may not
-            compress to extremely small targets without significant quality loss.
-            Try a larger target size.
-          </li>
-          <li>
-            <strong>Transparency lost:</strong> If you convert a PNG with
-            transparency to JPEG, transparent areas become white. Use PNG output
-            to keep transparency.
-          </li>
-          <li>
-            <strong>PNG compression limits:</strong> PNG uses lossless
-            compression. Size reduction for PNGs is limited compared to JPEG/WebP.
-          </li>
+          {commonIssuesItems.map((item, i) => (
+            <li key={i}>{item}</li>
+          ))}
         </ul>
 
-        <h3 className="mt-6 text-sm font-semibold text-text-primary">FAQ</h3>
+        <h3 className="mt-6 text-sm font-semibold text-text-primary">{t("compressor.faqTitle")}</h3>
         <dl className="mt-2 space-y-3 text-sm">
           <div>
             <dt className="font-medium text-text-primary">
-              Will compression reduce image quality?
+              {t("compressor.faq1Q")}
             </dt>
             <dd className="text-text-secondary">
-              Yes, some quality reduction is necessary to reduce file size. The
-              tool tries to find the best balance. For most online uploads
-              (forms, portals, emails), the quality difference is barely
-              noticeable.
+              {t("compressor.faq1A")}
             </dd>
           </div>
           <div>
             <dt className="font-medium text-text-primary">
-              Why is the result slightly above the target size?
+              {t("compressor.faq2Q")}
             </dt>
             <dd className="text-text-secondary">
-              For some images, the tool may not be able to hit the exact target
-              without unacceptable quality loss. The result will be as close as
-              possible to your target.
+              {t("compressor.faq2A")}
             </dd>
           </div>
           <div>
             <dt className="font-medium text-text-primary">
-              Is my file uploaded to a server?
+              {t("compressor.faq3Q")}
             </dt>
             <dd className="text-text-secondary">
-              No. All processing happens in your browser using the Canvas API.
-              Your file never leaves your device.
+              {t("compressor.faq3A")}
             </dd>
           </div>
         </dl>
@@ -458,13 +426,13 @@ export default function ImageCompressorPage() {
 
       {/* Related tools */}
       <section className="mt-8 border-t border-border-default pt-8">
-        <h2 className="text-lg font-semibold text-text-primary">Related tools</h2>
+        <h2 className="text-lg font-semibold text-text-primary">{t("related.title")}</h2>
         <div className="mt-3 flex flex-wrap gap-2">
           {[
-            { label: "Image Resizer", href: "/en/tools/image-resizer" },
-            { label: "Format Converter", href: "/en/tools/image-converter" },
-            { label: "Signature Processor", href: "/en/tools/signature-resizer" },
-            { label: "File Compliance Checker", href: "/en/check-file" },
+            { label: t("resizer.title"), href: `/${locale}/tools/image-resizer` },
+            { label: t("converter.title"), href: `/${locale}/tools/image-converter` },
+            { label: t("signature.title"), href: `/${locale}/tools/signature-resizer` },
+            { label: t("check.title"), href: `/${locale}/check-file` },
           ].map((tool) => (
             <Link
               key={tool.href}
@@ -478,7 +446,7 @@ export default function ImageCompressorPage() {
       </section>
 
       <p className="mt-8 text-xs text-text-tertiary">
-        Last updated: {new Date().toISOString().split("T")[0]}
+        {t("lastUpdated")}: {new Date().toISOString().split("T")[0]}
       </p>
     </div>
   );

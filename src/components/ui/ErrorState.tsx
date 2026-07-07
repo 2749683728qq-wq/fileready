@@ -1,6 +1,7 @@
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "./Button";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n";
 
 interface ErrorStateProps {
   title?: string;
@@ -10,22 +11,24 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({
-  title = "Something went wrong",
+  title,
   message,
   onRetry,
   className,
 }: ErrorStateProps) {
+  const t = useT();
+
   return (
     <div className={cn("flex flex-col items-center justify-center py-12 text-center", className)}>
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-error-50 text-error-500">
         <AlertTriangle className="h-8 w-8" />
       </div>
-      <h3 className="text-base font-semibold text-text-primary">{title}</h3>
+      <h3 className="text-base font-semibold text-text-primary">{title ?? t("error.somethingWentWrong")}</h3>
       <p className="mt-1 max-w-sm text-sm text-text-secondary">{message}</p>
       {onRetry && (
         <Button variant="outline" size="sm" onClick={onRetry} className="mt-4">
           <RefreshCw className="h-4 w-4" />
-          Try again
+          {t("error.tryAgain")}
         </Button>
       )}
     </div>

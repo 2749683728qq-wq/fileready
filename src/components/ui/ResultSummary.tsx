@@ -1,5 +1,6 @@
 import { CheckCircle2, XCircle, AlertTriangle, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n";
 
 type ResultStatus = "pass" | "fail" | "warning" | "unknown";
 
@@ -14,14 +15,16 @@ interface ResultSummaryProps {
   className?: string;
 }
 
-const statusConfig: Record<ResultStatus, { icon: typeof CheckCircle2; label: string; color: string }> = {
-  pass: { icon: CheckCircle2, label: "Passed", color: "text-success-600" },
-  fail: { icon: XCircle, label: "Failed", color: "text-error-600" },
-  warning: { icon: AlertTriangle, label: "Needs review", color: "text-warning-600" },
-  unknown: { icon: HelpCircle, label: "Cannot determine", color: "text-text-tertiary" },
-};
-
 export function ResultSummary({ items, className }: ResultSummaryProps) {
+  const t = useT();
+
+  const statusConfig: Record<ResultStatus, { icon: typeof CheckCircle2; label: string; color: string }> = {
+    pass: { icon: CheckCircle2, label: t("result.passed"), color: "text-success-600" },
+    fail: { icon: XCircle, label: t("result.failed"), color: "text-error-600" },
+    warning: { icon: AlertTriangle, label: t("result.needsReview"), color: "text-warning-600" },
+    unknown: { icon: HelpCircle, label: t("result.cannotDetermine"), color: "text-text-tertiary" },
+  };
+
   const counts = items.reduce(
     (acc, item) => {
       acc[item.status] = (acc[item.status] || 0) + 1;

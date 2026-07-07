@@ -1,49 +1,78 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import { Menu, X, ChevronDown } from "lucide-react";
+import { useT, useLocale } from "@/i18n";
+import type { Locale } from "@/i18n";
+import { Logo } from "./Logo";
 
-interface NavItem {
-  label: string;
-  href?: string;
-  children?: { label: string; href: string }[];
+function computeSwitchHref(fromLocale: Locale): string {
+  if (typeof window === "undefined") {
+    return fromLocale === "zh-CN" ? "/en/" : "/zh-CN/";
+  }
+  const targetLocale: Locale = fromLocale === "zh-CN" ? "en" : "zh-CN";
+  const clean = window.location.pathname.replace(/\/+$/, "") || "/";
+  const prefix = fromLocale === "zh-CN" ? "/zh-CN" : "/en";
+
+  if (clean.startsWith(prefix)) {
+    const rest = clean.slice(prefix.length);
+    return `/${targetLocale}${rest}/`;
+  }
+  return `/${targetLocale}/`;
 }
-
-const navItems: NavItem[] = [
-  {
-    label: "Tools",
-    children: [
-      { label: "File Compliance Checker", href: "/en/check-file" },
-      { label: "Image Compressor", href: "/en/tools/image-compressor" },
-      { label: "Image Resizer & Cropper", href: "/en/tools/image-resizer" },
-      { label: "Image Format Converter", href: "/en/tools/image-converter" },
-      { label: "Signature Processor", href: "/en/tools/signature-resizer" },
-      { label: "Image to PDF", href: "/en/tools/image-to-pdf" },
-      { label: "Merge PDF", href: "/en/tools/merge-pdf" },
-      { label: "Split & Extract PDF", href: "/en/tools/split-pdf" },
-      { label: "Remove Image Metadata", href: "/en/tools/remove-image-metadata" },
-      { label: "DPI & Size Calculator", href: "/en/tools/dpi-calculator" },
-    ],
-  },
-  {
-    label: "Use Cases",
-    children: [
-      { label: "Job Applications", href: "/en/use-cases/job-applications" },
-      { label: "School Applications", href: "/en/use-cases/school-applications" },
-      { label: "Exam Registration", href: "/en/use-cases/exam-registration" },
-      { label: "Visa & Passport", href: "/en/use-cases/visa-passport" },
-      { label: "Government Forms", href: "/en/use-cases/government-forms" },
-      { label: "Everyday Office", href: "/en/use-cases/everyday-office" },
-    ],
-  },
-  { label: "Guides", href: "/en/guides" },
-  { label: "About", href: "/en/about" },
-];
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const t = useT();
+  const locale = useLocale();
+
+  // Compute switch href only on client to avoid hydration mismatch.
+  // The key trick: use a stable initial value (the fallback) and
+  // update it in an effect WITHOUT causing a re-render of the <a> tag
+  // during hydration. We use a ref + direct DOM update instead.
+  const switchRef = useCallback((node: HTMLAnchorElement | null) => {
+    if (node && typeof window !== "undefined") {
+      const href = computeSwitchHref(locale);
+      if (node.getAttribute("href") !== href) {
+        node.setAttribute("href", href);
+      }
+    }
+  }, [locale]);
+
+  const fallbackHref = locale === "zh-CN" ? "/en/" : "/zh-CN/";
+
+  const navItems = [
+    {
+      label: t("nav.tools"),
+      children: [
+        { label: t("check.title"), href: `/${locale}/check-file` },
+        { label: t("compressor.title"), href: `/${locale}/tools/image-compressor` },
+        { label: t("resizer.title"), href: `/${locale}/tools/image-resizer` },
+        { label: t("converter.title"), href: `/${locale}/tools/image-converter` },
+        { label: t("signature.title"), href: `/${locale}/tools/signature-resizer` },
+        { label: t("img2pdf.title"), href: `/${locale}/tools/image-to-pdf` },
+        { label: t("merge.title"), href: `/${locale}/tools/merge-pdf` },
+        { label: t("split.title"), href: `/${locale}/tools/split-pdf` },
+        { label: t("metadata.title"), href: `/${locale}/tools/remove-image-metadata` },
+        { label: t("dpi.title"), href: `/${locale}/tools/dpi-calculator` },
+      ],
+    },
+    {
+      label: t("nav.useCases"),
+      children: [
+        { label: t("usecase.job.title"), href: `/${locale}/use-cases/job-applications` },
+        { label: t("usecase.school.title"), href: `/${locale}/use-cases/school-applications` },
+        { label: t("usecase.exam.title"), href: `/${locale}/use-cases/exam-registration` },
+        { label: t("usecase.visa.title"), href: `/${locale}/use-cases/visa-passport` },
+        { label: t("usecase.gov.title"), href: `/${locale}/use-cases/government-forms` },
+        { label: t("usecase.office.title"), href: `/${locale}/use-cases/everyday-office` },
+      ],
+    },
+    { label: t("nav.guides"), href: `/${locale}/guides` },
+    { label: t("nav.about"), href: `/${locale}/about` },
+  ];
 
   return (
     <header className="sticky top-0 z-50 border-b border-border-default bg-surface-card/95 backdrop-blur-sm">
@@ -51,18 +80,8 @@ export function Header() {
         className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8"
         aria-label="Main navigation"
       >
-        {/* Logo */}
-        <Link
-          href="/en"
-          className="flex items-center gap-2 text-lg font-semibold text-text-primary no-underline"
-        >
-          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-primary-600 text-sm font-bold text-white">
-            FU
-          </span>
-          <span className="hidden sm:inline">File Upload Assistant</span>
-        </Link>
+        <Logo locale={locale} />
 
-        {/* Desktop nav */}
         <div className="hidden items-center gap-1 md:flex">
           {navItems.map((item) => (
             <div
@@ -82,9 +101,7 @@ export function Header() {
                 <button
                   className="flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary"
                   onClick={() =>
-                    setActiveDropdown(
-                      activeDropdown === item.label ? null : item.label
-                    )
+                    setActiveDropdown(activeDropdown === item.label ? null : item.label)
                   }
                   aria-expanded={activeDropdown === item.label}
                 >
@@ -92,8 +109,6 @@ export function Header() {
                   <ChevronDown className="h-3.5 w-3.5" />
                 </button>
               )}
-
-              {/* Dropdown */}
               {item.children && activeDropdown === item.label && (
                 <div className="absolute left-0 top-full mt-1 min-w-[220px] rounded-lg border border-border-default bg-surface-card py-1 shadow-md">
                   {item.children.map((child) => (
@@ -109,9 +124,17 @@ export function Header() {
               )}
             </div>
           ))}
+          {/* Language switcher */}
+          <a
+            ref={switchRef}
+            href={fallbackHref}
+            className="ml-2 rounded-md border border-border-default px-3 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary"
+            aria-label={t("nav.switchLang")}
+          >
+            {t("nav.switchLang")}
+          </a>
         </div>
 
-        {/* Mobile menu button */}
         <button
           className="rounded-md p-2 text-text-secondary hover:bg-surface-hover md:hidden"
           onClick={() => setMobileOpen(!mobileOpen)}
@@ -122,7 +145,6 @@ export function Header() {
         </button>
       </nav>
 
-      {/* Mobile menu */}
       {mobileOpen && (
         <div className="border-t border-border-default bg-surface-card md:hidden">
           <div className="space-y-1 px-4 py-3">
@@ -155,6 +177,16 @@ export function Header() {
                 )}
               </div>
             ))}
+            <div className="pt-2 border-t border-border-default mt-2">
+              <a
+                ref={switchRef}
+                href={fallbackHref}
+                className="block rounded-md px-3 py-2 text-sm font-medium text-text-link hover:bg-surface-hover"
+                onClick={() => setMobileOpen(false)}
+              >
+                {t("nav.switchLang")}
+              </a>
+            </div>
           </div>
         </div>
       )}

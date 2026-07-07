@@ -13,3 +13,8 @@ export { ErrorState } from "./ErrorState";
 export { ResultSummary } from "./ResultSummary";
 export { BeforeAfterComparison } from "./BeforeAfterComparison";
 export { AdContainer } from "./AdContainer";
+export { MetadataTable } from "./MetadataTable";
+export { CookieConsent } from "./CookieConsent";
+export { CookieSettings } from "./CookieSettings";
+export { AdSenseScript } from "./AdSenseScript";
+export { GoogleAnalytics } from "./GoogleAnalytics";

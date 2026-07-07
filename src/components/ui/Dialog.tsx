@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n";
 
 interface DialogProps {
   open: boolean;
@@ -13,6 +14,7 @@ interface DialogProps {
 }
 
 export function Dialog({ open, onClose, title, children, className }: DialogProps) {
+  const t = useT();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
@@ -61,7 +63,7 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
         <button
           onClick={onClose}
           className="rounded-md p-1.5 text-text-tertiary hover:bg-surface-hover hover:text-text-primary transition-colors"
-          aria-label="Close dialog"
+          aria-label={t("ui.closeDialog")}
         >
           <X className="h-5 w-5" />
         </button>
