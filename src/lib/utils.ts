@@ -16,7 +16,9 @@ export function formatBytes(bytes: number): string {
   const units = ["B", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
   const size = bytes / Math.pow(1024, i);
-  return `${size.toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
+  // Show one decimal only when it adds precision
+  const formatted = Number.isInteger(size) ? size.toString() : size.toFixed(1);
+  return `${formatted} ${units[i]}`;
 }
 
 /**

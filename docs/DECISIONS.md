@@ -82,4 +82,20 @@
 - **决策**：在 `/` 根路径渲染英文首页组件，`/[locale]` 路由通过复用该组件实现
 - **原因**：Phase 1 先完成英文版；后续可扩展为基于 locale 的入口
 - **影响**：Phase 6 多语言实现时需要重构根路由逻辑
+
+## 决策 #11：压缩算法采用 Canvas + quality 二分搜索
+
+- **日期**：2025-07-07
+- **决策**：图片压缩优先使用 Canvas 导出 + 对 JPEG/WebP quality 做二分搜索，必要时回退尺寸缩小
+- **原因**：浏览器原生支持、无额外依赖、效果好；PNG 为无损格式，压缩空间有限
+- **影响**：压缩结果可能略大于目标值；极小目标可能需要尺寸缩小；PNG 透明转 JPEG 会变白底
+- **替代方案**：使用 wasm 压缩库（如 mozjpeg）→ 包体积大、加载慢；服务器压缩 → 违反本地处理原则
+
+## 决策 #12：OffscreenCanvas 为主线程 Canvas 的 fallback
+
+- **日期**：2025-07-07
+- **决策**：优先使用 OffscreenCanvas，不可用时 fallback 到 HTMLCanvasElement
+- **原因**：Safari 不支持 OffscreenCanvas，必须兼容
+- **影响**：代码稍复杂，但覆盖所有目标浏览器
+- **替代方案**：只用 HTMLCanvasElement → 大图片可能阻塞主线程；使用 Web Worker + OffscreenCanvas → Safari 不支持
 - **替代方案**：根路径直接重定向到 `/en` → 对 SEO 更友好，但 Phase 1 先保持简单
