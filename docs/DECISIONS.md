@@ -98,4 +98,11 @@
 - **原因**：Safari 不支持 OffscreenCanvas，必须兼容
 - **影响**：代码稍复杂，但覆盖所有目标浏览器
 - **替代方案**：只用 HTMLCanvasElement → 大图片可能阻塞主线程；使用 Web Worker + OffscreenCanvas → Safari 不支持
-- **替代方案**：根路径直接重定向到 `/en` → 对 SEO 更友好，但 Phase 1 先保持简单
+
+## 决策 #13：裁剪组件自定义实现而非第三方库
+
+- **日期**：2025-07-07
+- **决策**：图片裁剪编辑器从零实现（mouse drag + keyboard + 数值输入），不使用 react-image-crop 等库
+- **原因**：需求特殊（固定比例 + 自由比例 + 键盘微调 + 毫米/厘米/英寸换算），第三方库定制性不足；自实现包体积为零
+- **影响**：开发时间较长，但完全可控
+- **替代方案**：react-image-crop → API 不够灵活；cropper.js → 需要额外依赖
