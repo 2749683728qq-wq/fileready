@@ -189,7 +189,7 @@ export default function ImageToPdfPage() {
                   options={[
                     { value: "A4", label: "A4" },
                     { value: "Letter", label: "Letter" },
-                    { value: "Fit", label: "Fit to image" },
+                    { value: "Fit", label: t("img2pdf.fitToImage") },
                   ]}
                   value={pageSize}
                   onChange={(e) => setPageSize(e.target.value as PageSize)}
@@ -197,8 +197,8 @@ export default function ImageToPdfPage() {
                 <Select
                   label={t("img2pdf.orientation")}
                   options={[
-                    { value: "portrait", label: "Portrait" },
-                    { value: "landscape", label: "Landscape" },
+                    { value: "portrait", label: t("img2pdf.portrait") },
+                    { value: "landscape", label: t("img2pdf.landscape") },
                   ]}
                   value={orientation}
                   onChange={(e) => setOrientation(e.target.value as PageOrientation)}
@@ -206,9 +206,9 @@ export default function ImageToPdfPage() {
                 <Select
                   label={t("img2pdf.imageFit")}
                   options={[
-                    { value: "contain", label: "Contain (show all)" },
-                    { value: "cover", label: "Cover (fill page)" },
-                    { value: "fill", label: "Fill (stretch)" },
+                    { value: "contain", label: t("img2pdf.contain") },
+                    { value: "cover", label: t("img2pdf.cover") },
+                    { value: "fill", label: t("img2pdf.fill") },
                   ]}
                   value={imageFit}
                   onChange={(e) => setImageFit(e.target.value as "contain" | "cover" | "fill")}
@@ -299,7 +299,7 @@ export default function ImageToPdfPage() {
         )}
 
         {appState === "processing-failed" && (
-          <ErrorState title={t("img2pdf.failed")} message={error || "An unexpected error occurred."} onRetry={startConversion} />
+          <ErrorState title={t("img2pdf.failed")} message={error || t("error.unexpectedConvert")} onRetry={startConversion} />
         )}
 
         {appState === "processing-done" && result && (

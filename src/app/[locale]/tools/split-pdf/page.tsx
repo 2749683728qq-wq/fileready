@@ -215,8 +215,8 @@ export default function SplitPdfPage() {
                 onChange={(e) => setSplitMode(e.target.value as SplitMode)}
                 options={[
                   { value: "all", label: t("split.allPages"), hint: t("split.removePages") },
-                  { value: "range", label: t("split.pageRange"), hint: "Extract a range like 1-5" },
-                  { value: "extract", label: t("split.specificPages"), hint: "Pick exact pages like 1,3,5-7" },
+                  { value: "range", label: t("split.pageRange"), hint: t("split.rangeHint") },
+                  { value: "extract", label: t("split.specificPages"), hint: t("split.pickHint") },
                 ]}
               />
 
@@ -259,7 +259,7 @@ export default function SplitPdfPage() {
         )}
 
         {appState === "processing-failed" && (
-          <ErrorState title={t("split.failed")} message={error || "An unexpected error occurred."} onRetry={startSplit} />
+          <ErrorState title={t("split.failed")} message={error || t("error.unexpectedConvert")} onRetry={startSplit} />
         )}
 
         {appState === "processing-done" && result && (
@@ -302,7 +302,7 @@ export default function SplitPdfPage() {
               <p className="mt-1">
                 {idx === 0
                   ? `Use commas to separate pages and hyphens for ranges. Example: ${"`"}1,3,5-8,12${"`"} extracts pages 1, 3, 5 through 8, and 12.`
-                  : "Pages are numbered starting from 1 (the first page). All ranges are inclusive."}
+                  : t("split.pageNumberNote")}
               </p>
             </div>
           ))}

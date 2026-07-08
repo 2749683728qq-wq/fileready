@@ -57,10 +57,10 @@ export interface SignatureResult {
 // ============================================================
 
 export const SIGNATURE_PRESETS = [
-  { label: "Custom", width: 0, height: 0 },
-  { label: "Passport Photo (600×600)", width: 600, height: 600 },
-  { label: "Visa Application (800×400)", width: 800, height: 400 },
-  { label: "Exam Form (400×200)", width: 400, height: 200 },
+  { label: "custom", width: 0, height: 0 },
+  { label: "passport", width: 600, height: 600 },
+  { label: "visa", width: 800, height: 400 },
+  { label: "exam", width: 400, height: 200 },
 ];
 
 // ============================================================

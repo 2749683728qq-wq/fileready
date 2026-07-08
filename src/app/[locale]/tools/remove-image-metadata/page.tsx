@@ -160,7 +160,8 @@ export default function MetadataRemoverPage() {
               <Alert variant="warning" title={t("metadata.privacyRisk")}>
                 {getPrivacyRiskLabel(metadata.privacyRiskLevel)}.{" "}
                 {metadata.totalEntries} metadata{" "}
-                {metadata.totalEntries === 1 ? "entry" : "entries"} found.
+                {metadata.totalEntries === 1 ? t("metadata.foundEntry") : t("metadata.foundEntries")}{" "}
+                {t("metadata.foundLabel")}
               </Alert>
             )}
 
@@ -221,7 +222,7 @@ export default function MetadataRemoverPage() {
         {appState === "processing-failed" && (
           <ErrorState
             title={t("metadata.failed")}
-            message={error || "An unexpected error occurred."}
+            message={error || t("error.unexpectedConvert")}
             onRetry={retry}
           />
         )}
@@ -231,43 +232,41 @@ export default function MetadataRemoverPage() {
           <div className="space-y-6">
             <Alert variant="success" title={t("metadata.removed")}>
               <CheckCircle2 className="mr-2 h-4 w-4" />
-              All {result.metadataBefore.totalEntries} metadata{" "}
-              {result.metadataBefore.totalEntries === 1 ? "entry" : "entries"}{" "}
-              removed successfully.
+              {t("metadata.foundCount").replace("{n}", String(result.metadataBefore.totalEntries))}
             </Alert>
 
             <BeforeAfterComparison
               rows={[
                 {
-                  label: "Metadata Entries",
+                  label: t("ui.metadataEntries"),
                   before: String(result.metadataBefore.totalEntries),
                   after: String(result.metadataAfter.totalEntries),
                   improved: result.metadataAfter.totalEntries === 0,
                 },
                 {
-                  label: "GPS Location",
-                  before: result.metadataBefore.hasLocation ? "Present" : "None",
-                  after: "Removed",
+                  label: t("ui.gpsLocation"),
+                  before: result.metadataBefore.hasLocation ? t("ui.present") : t("ui.none"),
+                  after: t("ui.removed"),
                   improved: result.metadataBefore.hasLocation,
                 },
                 {
-                  label: "Camera Info",
+                  label: t("ui.cameraInfo"),
                   before: result.metadataBefore.hasCameraInfo
-                    ? "Present"
-                    : "None",
-                  after: "Removed",
+                    ? t("ui.present")
+                    : t("ui.none"),
+                  after: t("ui.removed"),
                   improved: result.metadataBefore.hasCameraInfo,
                 },
                 {
-                  label: "Timestamps",
+                  label: t("ui.timestamps"),
                   before: result.metadataBefore.hasTimestamp
-                    ? "Present"
-                    : "None",
-                  after: "Removed",
+                    ? t("ui.present")
+                    : t("ui.none"),
+                  after: t("ui.removed"),
                   improved: result.metadataBefore.hasTimestamp,
                 },
                 {
-                  label: "File Size",
+                  label: t("ui.fileSize"),
                   before: formatBytes(meta.sizeBytes),
                   after: formatBytes(result.sizeBytes),
                   improved: result.sizeBytes < meta.sizeBytes,
@@ -366,7 +365,7 @@ export default function MetadataRemoverPage() {
               href={`/${locale}/tools/image-compressor`}
               className="text-sm text-text-link hover:underline"
             >
-              Image Compressor
+              {t("compressor.title")}
             </Link>
           </li>
           <li>
@@ -374,7 +373,7 @@ export default function MetadataRemoverPage() {
               href={`/${locale}/tools/image-converter`}
               className="text-sm text-text-link hover:underline"
             >
-              Image Format Converter
+              {t("converter.title")}
             </Link>
           </li>
           <li>
@@ -382,7 +381,7 @@ export default function MetadataRemoverPage() {
               href={`/${locale}/tools/image-resizer`}
               className="text-sm text-text-link hover:underline"
             >
-              Image Resizer &amp; Cropper
+              {t("resizer.title")}
             </Link>
           </li>
         </ul>

@@ -331,7 +331,7 @@ export default function ImageCompressorPage() {
         {/* Error states */}
         {appState === "processing-failed" && (
           <ErrorState
-            message={error || "An unexpected error occurred during compression."}
+            message={error || t("error.unexpectedCompress")}
             onRetry={retry}
           />
         )}

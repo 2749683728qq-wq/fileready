@@ -252,7 +252,7 @@ export default function ImageConverterPage() {
         {appState === "processing-failed" && (
           <ErrorState
             title={t("converter.failed")}
-            message={error || "An unexpected error occurred."}
+            message={error || t("error.unexpectedConvert")}
             onRetry={retry}
           />
         )}
@@ -268,19 +268,19 @@ export default function ImageConverterPage() {
             <BeforeAfterComparison
               rows={[
                 {
-                  label: "Format",
+                  label: t("ui.format"),
                   before: getFormatLabel(meta.format),
                   after: getFormatLabel(result.format),
                   improved: meta.format !== result.format,
                 },
                 {
-                  label: "File Size",
+                  label: t("ui.fileSize"),
                   before: formatBytes(meta.sizeBytes),
                   after: formatBytes(result.sizeBytes),
                   improved: result.sizeBytes < meta.sizeBytes,
                 },
                 {
-                  label: "Dimensions",
+                  label: t("ui.dimensions"),
                   before: formatDimensions(meta.width, meta.height),
                   after: formatDimensions(result.width, result.height),
                   improved: false,
@@ -288,7 +288,7 @@ export default function ImageConverterPage() {
                 ...(result.format !== "image/png"
                   ? [
                       {
-                        label: "Quality",
+                        label: t("ui.quality"),
                         before: "100%",
                         after: `${Math.round(result.quality * 100)}%`,
                         improved: false,

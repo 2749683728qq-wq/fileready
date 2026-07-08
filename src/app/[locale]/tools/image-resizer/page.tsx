@@ -44,6 +44,25 @@ import {
 import { formatBytes, formatDimensions } from "@/lib/utils";
 import { useT, useTArray, useLocale } from "@/i18n";
 
+const ASPECT_RATIO_KEY_MAP: Record<string, string> = {
+  free: "preset.free",
+  "1:1": "preset.square",
+  "3:4": "preset.portrait",
+  "4:3": "preset.landscape",
+  "16:9": "preset.widescreen",
+  "9:16": "preset.story",
+  "3:2": "preset.photo3_2",
+  "2:3": "preset.portraitPhoto",
+  custom: "preset.custom",
+};
+
+const SIZE_UNIT_KEY_MAP: Record<string, string> = {
+  pixels: "unit.pixels",
+  mm: "unit.mm",
+  cm: "unit.cm",
+  in: "unit.in",
+};
+
 type AppState =
   | "initial"
   | "reading-file"
@@ -351,7 +370,7 @@ export default function ImageResizerPage() {
                     </label>
                     <Select
                       label=""
-                      options={ASPECT_RATIO_PRESETS.map(p => ({ value: p.value, label: p.label }))}
+                      options={ASPECT_RATIO_PRESETS.map(p => ({ value: p.value, label: t(ASPECT_RATIO_KEY_MAP[p.label] || p.label) }))}
                       value={aspectPreset}
                       onChange={(e) => handleAspectChange(e.target.value as AspectRatioPreset)}
                     />
@@ -449,7 +468,7 @@ export default function ImageResizerPage() {
               <div className="mb-3">
                 <Select
                   label=""
-                  options={SIZE_UNITS.map(u => ({ value: u.value, label: u.label }))}
+                  options={SIZE_UNITS.map(u => ({ value: u.value, label: t(SIZE_UNIT_KEY_MAP[u.label] || u.label) }))}
                   value={unit}
                   onChange={(e) => setUnit(e.target.value as ResizeUnit)}
                 />
@@ -552,9 +571,9 @@ export default function ImageResizerPage() {
 
             <BeforeAfterComparison
               rows={[
-                { label: "File size", before: formatBytes(file?.size || 0), after: formatBytes(result.sizeBytes), improved: result.sizeBytes < (file?.size || 0) },
-                { label: "Dimensions", before: formatDimensions(imgWidth, imgHeight), after: formatDimensions(result.width, result.height), improved: true },
-                { label: "Processing time", before: "—", after: `${(result.durationMs / 1000).toFixed(1)}s` },
+                { label: t("ui.fileSize"), before: formatBytes(file?.size || 0), after: formatBytes(result.sizeBytes), improved: result.sizeBytes < (file?.size || 0) },
+                { label: t("ui.dimensions"), before: formatDimensions(imgWidth, imgHeight), after: formatDimensions(result.width, result.height), improved: true },
+                { label: t("ui.processingTime"), before: "—", after: `${(result.durationMs / 1000).toFixed(1)}s` },
               ]}
             />
 
@@ -573,7 +592,7 @@ export default function ImageResizerPage() {
 
         {/* Error */}
         {appState === "processing-failed" && (
-          <ErrorState message={error || "An error occurred"} onRetry={() => setAppState("file-ready")} />
+          <ErrorState message={error || t("error.unexpectedResize")} onRetry={() => setAppState("file-ready")} />
         )}
 
         {appState === "download-ready" && (

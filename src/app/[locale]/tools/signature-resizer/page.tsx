@@ -28,20 +28,21 @@ import { SIGNATURE_PRESETS } from "@/lib/image";
 import type { ColorMode } from "@/lib/image";
 import { useT, useLocale } from "@/i18n";
 
-const COLOR_MODE_OPTIONS: { value: ColorMode; label: string; hint?: string }[] = [
-  { value: "original", label: "Original Colors", hint: "Keep the original colors" },
-  { value: "grayscale", label: "Grayscale", hint: "Convert to shades of gray" },
-  { value: "black-and-white", label: "Black & White", hint: "Pure black and white" },
-];
-
-const PRESET_OPTIONS = SIGNATURE_PRESETS.map((p) => ({
-  value: `${p.width}x${p.height}`,
-  label: p.label,
-}));
+const SIGNATURE_PRESET_KEY_MAP: Record<string, string> = {
+  custom: "preset.custom",
+  passport: "preset.passport",
+  visa: "preset.visa",
+  exam: "preset.exam",
+};
 
 export default function SignatureProcessorPage() {
   const t = useT();
   const locale = useLocale();
+
+  const PRESET_OPTIONS = SIGNATURE_PRESETS.map((p) => ({
+    value: `${p.width}x${p.height}`,
+    label: t(SIGNATURE_PRESET_KEY_MAP[p.label] || p.label),
+  }));
   const processor = useSignatureProcessor();
   const {
     appState,
@@ -262,9 +263,9 @@ export default function SignatureProcessorPage() {
                     updateOptions({ colorMode: e.target.value as ColorMode })
                   }
                   options={[
-                    { value: "original", label: t("signature.original"), hint: "Keep the original colors" },
-                    { value: "grayscale", label: t("signature.grayscale"), hint: "Convert to shades of gray" },
-                    { value: "black-and-white", label: t("signature.bw"), hint: "Pure black and white" },
+                    { value: "original", label: t("signature.original"), hint: t("signature.originalHint") },
+                    { value: "grayscale", label: t("signature.grayscale"), hint: t("signature.grayscaleHint") },
+                    { value: "black-and-white", label: t("signature.bw"), hint: t("signature.bwHint") },
                   ]}
                 />
 
@@ -420,7 +421,7 @@ export default function SignatureProcessorPage() {
         {appState === "processing-failed" && (
           <ErrorState
             title={t("signature.failed")}
-            message={error || "An unexpected error occurred."}
+            message={error || t("error.unexpectedConvert")}
             onRetry={retry}
           />
         )}
@@ -436,26 +437,26 @@ export default function SignatureProcessorPage() {
             <BeforeAfterComparison
               rows={[
                 {
-                  label: "Dimensions",
+                  label: t("ui.dimensions"),
                   before: formatDimensions(meta.width, meta.height),
                   after: formatDimensions(result.width, result.height),
                   improved: result.cropRect !== null,
                 },
                 {
-                  label: "File Size",
+                  label: t("ui.fileSize"),
                   before: formatBytes(meta.sizeBytes),
                   after: formatBytes(result.sizeBytes),
                   improved: result.sizeBytes < meta.sizeBytes,
                 },
                 {
-                  label: "Background",
-                  before: options.removeBackground ? "White/Colored" : "Original",
-                  after: options.removeBackground ? "Transparent" : "Original",
+                  label: t("ui.background"),
+                  before: options.removeBackground ? t("ui.whiteColored") : t("ui.original"),
+                  after: options.removeBackground ? t("ui.transparent") : t("ui.original"),
                   improved: options.removeBackground,
                 },
                 {
-                  label: "Color Mode",
-                  before: "Original",
+                  label: t("ui.colorMode"),
+                  before: t("ui.original"),
                   after:
                     options.colorMode === "black-and-white"
                       ? t("signature.bw")
@@ -467,9 +468,9 @@ export default function SignatureProcessorPage() {
                 ...(result.cropRect
                   ? [
                       {
-                        label: "Auto-cropped",
-                        before: "No",
-                        after: "Yes",
+                        label: t("ui.autoCropped"),
+                        before: t("ui.no"),
+                        after: t("ui.yes"),
                         improved: true,
                       },
                     ]
@@ -537,9 +538,7 @@ export default function SignatureProcessorPage() {
               {t("signature.tips.whiteBg")}
             </h3>
             <p className="mt-1">
-              Sign on a plain white piece of paper for the cleanest result.
-              Avoid lined or colored paper — the background removal works best
-              with high contrast between the signature and background.
+              {t("signature.tips.whiteBg")}
             </p>
           </div>
           <div>
@@ -547,9 +546,7 @@ export default function SignatureProcessorPage() {
               {t("signature.tips.lighting")}
             </h3>
             <p className="mt-1">
-              Good lighting reduces shadows and makes the signature easier to
-              separate from the background. Avoid flash if possible — natural
-              daylight works best.
+              {t("signature.tips.lighting")}
             </p>
           </div>
           <div>
@@ -557,14 +554,12 @@ export default function SignatureProcessorPage() {
               {t("signature.tips.format")}
             </h3>
             <p className="mt-1">
-              Signatures are always exported as PNG files to preserve
-              transparency. This is the standard format accepted by most online
-              forms. If you need to reduce the file size further, use the{" "}
+              {t("signature.tips.format")}{" "}
               <Link
                 href={`/${locale}/tools/image-compressor`}
                 className="text-text-link hover:underline"
               >
-                Image Compressor
+                {t("compressor.title")}
               </Link>
               .
             </p>
@@ -583,7 +578,7 @@ export default function SignatureProcessorPage() {
               href={`/${locale}/tools/image-resizer`}
               className="text-sm text-text-link hover:underline"
             >
-              Image Resizer &amp; Cropper
+              {t("resizer.title")}
             </Link>
           </li>
           <li>
@@ -591,7 +586,7 @@ export default function SignatureProcessorPage() {
               href={`/${locale}/tools/image-compressor`}
               className="text-sm text-text-link hover:underline"
             >
-              Image Compressor
+              {t("compressor.title")}
             </Link>
           </li>
           <li>
@@ -599,7 +594,7 @@ export default function SignatureProcessorPage() {
               href={`/${locale}/tools/remove-image-metadata`}
               className="text-sm text-text-link hover:underline"
             >
-              Remove Image Metadata
+              {t("metadata.title")}
             </Link>
           </li>
         </ul>

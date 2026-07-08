@@ -13,16 +13,16 @@ import type { LengthUnit, DpiCalculation } from "@/lib/image";
 import { formatAspectRatio } from "@/lib/utils";
 import { useT, useLocale } from "@/i18n";
 
-const UNIT_OPTIONS: { value: LengthUnit; label: string }[] = [
-  { value: "px", label: "Pixels (px)" },
-  { value: "mm", label: "Millimeters (mm)" },
-  { value: "cm", label: "Centimeters (cm)" },
-  { value: "in", label: "Inches (in)" },
-];
-
 export default function DpiCalculatorPage() {
   const t = useT();
   const locale = useLocale();
+
+  const UNIT_OPTIONS: { value: LengthUnit; label: string }[] = [
+    { value: "px", label: t("dpi.unitPixels") },
+    { value: "mm", label: t("dpi.unitMm") },
+    { value: "cm", label: t("dpi.unitCm") },
+    { value: "in", label: t("dpi.unitIn") },
+  ];
   const [width, setWidth] = useState(1920);
   const [height, setHeight] = useState(1080);
   const [unit, setUnit] = useState<LengthUnit>("px");

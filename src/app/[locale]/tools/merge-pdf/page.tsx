@@ -224,7 +224,7 @@ export default function MergePdfPage() {
         )}
 
         {appState === "processing-failed" && (
-          <ErrorState title={t("merge.failed")} message={error || "An unexpected error occurred."} onRetry={startMerge} />
+          <ErrorState title={t("merge.failed")} message={error || t("error.unexpectedConvert")} onRetry={startMerge} />
         )}
 
         {appState === "processing-done" && result && (

@@ -235,22 +235,22 @@ export function createPreviewUrl(file: File): string {
 }
 
 export const ASPECT_RATIO_PRESETS: { label: string; value: AspectRatioPreset }[] = [
-  { label: "Free", value: "free" },
-  { label: "1:1 (Square)", value: "1:1" },
-  { label: "3:4 (Portrait)", value: "3:4" },
-  { label: "4:3 (Landscape)", value: "4:3" },
-  { label: "16:9 (Widescreen)", value: "16:9" },
-  { label: "9:16 (Story)", value: "9:16" },
-  { label: "3:2 (Photo)", value: "3:2" },
-  { label: "2:3 (Portrait Photo)", value: "2:3" },
-  { label: "Custom", value: "custom" },
+  { label: "free", value: "free" },
+  { label: "1:1", value: "1:1" },
+  { label: "3:4", value: "3:4" },
+  { label: "4:3", value: "4:3" },
+  { label: "16:9", value: "16:9" },
+  { label: "9:16", value: "9:16" },
+  { label: "3:2", value: "3:2" },
+  { label: "2:3", value: "2:3" },
+  { label: "custom", value: "custom" },
 ];
 
 export const SIZE_UNITS: { label: string; value: ResizeUnit }[] = [
-  { label: "Pixels (px)", value: "px" },
-  { label: "Millimeters (mm)", value: "mm" },
-  { label: "Centimeters (cm)", value: "cm" },
-  { label: "Inches (in)", value: "in" },
+  { label: "pixels", value: "px" },
+  { label: "mm", value: "mm" },
+  { label: "cm", value: "cm" },
+  { label: "in", value: "in" },
 ];
 
 export class ResizeError extends Error {
