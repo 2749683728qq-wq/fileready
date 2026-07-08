@@ -37,9 +37,9 @@ jobs:
           cache: "pnpm"
 
       - name: 安装依赖
-        run: |
-          pnpm config set approve-builds true
-          pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
+        env:
+          PNPM_IGNORE_BUILT_DEPENDENCIES: "true"
 
       - name: 构建静态站点
         run: pnpm build
