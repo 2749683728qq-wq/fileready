@@ -3,17 +3,16 @@
 import Script from "next/script";
 import { useEffect, useState } from "react";
 
+const DEFAULT_GA_ID = "G-V396LK6VZ3";
+
 /**
  * Loads Google Analytics (GA4) script.
- * Only runs when NEXT_PUBLIC_GA_ENABLED=true and user accepted cookies.
+ * Runs when user accepted cookies. Falls back to DEFAULT_GA_ID if env var is not set.
  */
 export function GoogleAnalytics() {
   const [shouldLoad, setShouldLoad] = useState(false);
 
   useEffect(() => {
-    const enabled = process.env.NEXT_PUBLIC_GA_ENABLED === "true";
-    if (!enabled) return;
-
     const consent = localStorage.getItem("fua-cookie-consent");
     if (consent === "accepted") {
       setShouldLoad(true);
@@ -22,7 +21,7 @@ export function GoogleAnalytics() {
 
   if (!shouldLoad) return null;
 
-  const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || DEFAULT_GA_ID;
   if (!measurementId) return null;
 
   return (
