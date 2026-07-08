@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     icon: "/favicon.svg",
   },
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "https://fileready.io"
+    process.env.NEXT_PUBLIC_SITE_URL || "https://fileready.vip"
   ),
   alternates: {
     languages: {

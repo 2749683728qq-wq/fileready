@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LocaleProvider } from "@/i18n";
 import type { Locale } from "@/i18n";
 
-const SITE_URL = "https://fileready.io";
+const SITE_URL = "https://fileready.vip";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

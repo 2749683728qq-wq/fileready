@@ -12,7 +12,7 @@ export function StructuredData() {
     "@type": "WebSite",
     name: "FileReady",
     alternateName: "文件就绪",
-    url: "https://fileready.io",
+    url: "https://fileready.vip",
     description:
       "Free online tools to check, compress, resize, and convert images, PDFs, and signatures. All processed privately in your browser.",
     inLanguage: ["en", "zh-CN"],
@@ -20,7 +20,7 @@ export function StructuredData() {
       "@type": "SearchAction",
       target: {
         "@type": "EntryPoint",
-        urlTemplate: "https://fileready.io/search?q={search_term_string}",
+        urlTemplate: "https://fileready.vip/search?q={search_term_string}",
       },
       "query-input": "required name=search_term_string",
     },
@@ -31,8 +31,8 @@ export function StructuredData() {
     "@type": "Organization",
     name: "FileReady",
     alternateName: "文件就绪",
-    url: "https://fileready.io",
-    logo: "https://fileready.io/favicon.svg",
+    url: "https://fileready.vip",
+    logo: "https://fileready.vip/favicon.svg",
     description:
       "Free online tools to help you prepare files for upload — compress, resize, convert, and check files in your browser.",
     knowsAbout: [

@@ -42,8 +42,7 @@ jobs:
       - name: 构建静态站点
         run: pnpm build
         env:
-          GITHUB_PAGES: "true"
-          NEXT_PUBLIC_SITE_URL: "https://2749683728qq-wq.github.io"
+          NEXT_PUBLIC_SITE_URL: "https://fileready.vip"
 
       - name: 添加 .nojekyll 文件
         run: touch dist/.nojekyll

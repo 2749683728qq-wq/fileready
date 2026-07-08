@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /api/
 
-Sitemap: https://fileready.io/sitemap.xml
+Sitemap: https://fileready.vip/sitemap.xml

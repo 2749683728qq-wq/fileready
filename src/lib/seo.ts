@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 const SITE_NAME = "FileReady";
-const SITE_URL = "https://fileready.io";
+const SITE_URL = "https://fileready.vip";
 const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
 
 interface PageMeta {
