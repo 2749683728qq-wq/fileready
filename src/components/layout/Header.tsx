@@ -1,55 +1,47 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { useT, useLocale } from "@/i18n";
 import type { Locale } from "@/i18n";
 import { Logo } from "./Logo";
 
-// Read basePath at build time for client code (injected via next.config.ts env)
-const NEXT_PUBLIC_BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
+/** Get the switch-to URL based on current browser pathname. */
+function getSwitchHref(currentLocale: Locale): string {
+  const targetLocale: Locale = currentLocale === "zh-CN" ? "en" : "zh-CN";
 
-function computeSwitchHref(fromLocale: Locale): string {
   if (typeof window === "undefined") {
-    const base = NEXT_PUBLIC_BASE_PATH;
-    return fromLocale === "zh-CN" ? `${base}/en/` : `${base}/zh-CN/`;
+    return `/${targetLocale}/`;
   }
-  const targetLocale: Locale = fromLocale === "zh-CN" ? "en" : "zh-CN";
-  const base = NEXT_PUBLIC_BASE_PATH;
-  const pathname = window.location.pathname;
-  // Remove trailing slashes and basePath prefix
-  const withoutBase = pathname.startsWith(base) ? pathname.slice(base.length) : pathname;
-  const clean = withoutBase.replace(/\/+$/, "") || "/";
-  const prefix = fromLocale === "zh-CN" ? "/zh-CN" : "/en";
 
-  if (clean.startsWith(prefix)) {
-    const rest = clean.slice(prefix.length);
-    return `${base}/${targetLocale}${rest}/`;
+  const pathname = window.location.pathname.replace(/\/+$/, "") || "/";
+  const currentPrefix = currentLocale === "zh-CN" ? "/zh-CN" : "/en";
+
+  // Find the current locale prefix in the pathname
+  const idx = pathname.indexOf(currentPrefix);
+  if (idx !== -1) {
+    const rest = pathname.slice(idx + currentPrefix.length);
+    return `/${targetLocale}${rest}/`;
   }
-  return `${base}/${targetLocale}/`;
+
+  // Fallback: go to homepage of target locale
+  return `/${targetLocale}/`;
 }
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [switchHref, setSwitchHref] = useState<string>("");
   const t = useT();
   const locale = useLocale();
 
-  // Compute switch href only on client to avoid hydration mismatch.
-  // The key trick: use a stable initial value (the fallback) and
-  // update it in an effect WITHOUT causing a re-render of the <a> tag
-  // during hydration. We use a ref + direct DOM update instead.
-  const switchRef = useCallback((node: HTMLAnchorElement | null) => {
-    if (node && typeof window !== "undefined") {
-      const href = computeSwitchHref(locale);
-      if (node.getAttribute("href") !== href) {
-        node.setAttribute("href", href);
-      }
-    }
+  // Compute the switch href on mount and when locale changes.
+  // We use useEffect + useState instead of direct DOM manipulation
+  // so both desktop and mobile buttons get the same correct href.
+  useEffect(() => {
+    setSwitchHref(getSwitchHref(locale));
   }, [locale]);
-
-  const fallbackHref = locale === "zh-CN" ? `${NEXT_PUBLIC_BASE_PATH}/en/` : `${NEXT_PUBLIC_BASE_PATH}/zh-CN/`;
 
   const navItems = [
     {
@@ -132,10 +124,9 @@ export function Header() {
               )}
             </div>
           ))}
-          {/* Language switcher */}
+          {/* Language switcher - desktop */}
           <a
-            ref={switchRef}
-            href={fallbackHref}
+            href={switchHref}
             className="ml-2 rounded-md border border-border-default px-3 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:bg-surface-hover hover:text-text-primary"
             aria-label={t("nav.switchLang")}
           >
@@ -187,8 +178,7 @@ export function Header() {
             ))}
             <div className="pt-2 border-t border-border-default mt-2">
               <a
-                ref={switchRef}
-                href={fallbackHref}
+                href={switchHref}
                 className="block rounded-md px-3 py-2 text-sm font-medium text-text-link hover:bg-surface-hover"
                 onClick={() => setMobileOpen(false)}
               >

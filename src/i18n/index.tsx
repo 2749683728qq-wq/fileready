@@ -21,7 +21,9 @@ export function useLocale(): Locale {
   const ctx = useContext(LocaleContext);
   // Fallback: detect from URL if context not set (edge case in static export)
   if (typeof window !== "undefined" && ctx === "en") {
-    if (window.location.pathname.startsWith("/zh-CN")) return "zh-CN";
+    const pathname = window.location.pathname;
+    // Support both root path (/zh-CN/...) and sub-path (/fileready/zh-CN/...)
+    if (pathname.includes("/zh-CN")) return "zh-CN";
   }
   return ctx;
 }
