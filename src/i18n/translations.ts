@@ -971,6 +971,184 @@ const checkFile = {
     "zh-CN": "您的文件不满足所有要求。请查看下方详情。",
   },
   "check.results": { en: "Detailed Check Results", "zh-CN": "详细检查结果" },
+  // File compliance check item labels and details
+  "check.item.fileType": { en: "File type", "zh-CN": "文件类型" },
+  "check.item.fileExtension": { en: "File extension", "zh-CN": "文件扩展名" },
+  "check.item.fileSize": { en: "File size", "zh-CN": "文件大小" },
+  "check.item.filenameSpaces": { en: "Filename (no spaces)", "zh-CN": "文件名（无空格）" },
+  "check.item.filenameSpecial": { en: "Filename (no special chars)", "zh-CN": "文件名（无特殊字符）" },
+  "check.item.imageWidth": { en: "Image width", "zh-CN": "图片宽度" },
+  "check.item.imageHeight": { en: "Image height", "zh-CN": "图片高度" },
+  "check.item.orientation": { en: "Orientation", "zh-CN": "方向" },
+  "check.item.aspectRatio": { en: "Aspect ratio", "zh-CN": "宽高比" },
+  "check.item.dpi": { en: "DPI information", "zh-CN": "DPI 信息" },
+  "check.item.locationMetadata": { en: "Location metadata", "zh-CN": "位置元数据" },
+  "check.item.imageAnalysis": { en: "Image analysis", "zh-CN": "图片分析" },
+  "check.item.pdfAnalysis": { en: "PDF analysis", "zh-CN": "PDF 分析" },
+  "check.item.dimensions": { en: "Dimensions", "zh-CN": "尺寸" },
+  // Detail keys
+  "check.detail.unsupportedType": {
+    en: "Unsupported file type ({type}). Only JPG, PNG, WebP, and PDF are supported.",
+    "zh-CN": "不支持的文件类型（{type}）。仅支持 JPG、PNG、WebP 和 PDF。",
+  },
+  "check.detail.typeNotAllowed": {
+    en: "{type} files are not allowed. Required: {required}.",
+    "zh-CN": "不允许 {type} 文件。要求：{required}。",
+  },
+  "check.detail.typeAllowed": {
+    en: "{type} — allowed",
+    "zh-CN": "{type} — 允许",
+  },
+  "check.detail.ext": {
+    en: ".{ext}",
+    "zh-CN": ".{ext}",
+  },
+  "check.detail.sizeExceeds": {
+    en: "{size} exceeds maximum {max}",
+    "zh-CN": "{size} 超过最大限制 {max}",
+  },
+  "check.detail.sizeOk": {
+    en: "{size} — within {max} limit",
+    "zh-CN": "{size} — 在 {max} 限制内",
+  },
+  "check.detail.filenameHasSpaces": {
+    en: "Filename contains spaces. Some systems may reject it.",
+    "zh-CN": "文件名包含空格。某些系统可能会拒绝。",
+  },
+  "check.detail.filenameNoSpaces": {
+    en: "No spaces in filename",
+    "zh-CN": "文件名无空格",
+  },
+  "check.detail.filenameHasSpecial": {
+    en: "Filename contains special characters. Rename to use only letters, numbers, hyphens, and underscores.",
+    "zh-CN": "文件名包含特殊字符。请重命名为仅包含字母、数字、连字符和下划线。",
+  },
+  "check.detail.filenameNoSpecial": {
+    en: "No special characters in filename",
+    "zh-CN": "文件名无特殊字符",
+  },
+  "check.detail.widthExceeds": {
+    en: "{width} exceeds maximum {max} px",
+    "zh-CN": "{width} 超过最大宽度 {max} px",
+  },
+  "check.detail.widthBelow": {
+    en: "{width} px is below minimum {min} px",
+    "zh-CN": "{width} px 低于最小宽度 {min} px",
+  },
+  "check.detail.widthOk": {
+    en: "{width} px",
+    "zh-CN": "{width} px",
+  },
+  "check.detail.heightExceeds": {
+    en: "{height} exceeds maximum {max} px",
+    "zh-CN": "{height} 超过最大高度 {max} px",
+  },
+  "check.detail.heightBelow": {
+    en: "{height} px is below minimum {min} px",
+    "zh-CN": "{height} px 低于最小高度 {min} px",
+  },
+  "check.detail.heightOk": {
+    en: "{height} px",
+    "zh-CN": "{height} px",
+  },
+  "check.detail.orientationWrongLandscape": {
+    en: "Landscape orientation detected — portrait required",
+    "zh-CN": "检测到横向方向——需要纵向",
+  },
+  "check.detail.orientationWrongPortrait": {
+    en: "Portrait orientation detected — landscape required",
+    "zh-CN": "检测到纵向方向——需要横向",
+  },
+  "check.detail.portrait": { en: "Portrait", "zh-CN": "纵向" },
+  "check.detail.landscape": { en: "Landscape", "zh-CN": "横向" },
+  "check.detail.ratioNotAllowed": {
+    en: "{ratio} — not in allowed ratios: {allowed}",
+    "zh-CN": "{ratio} — 不在允许的宽高比中：{allowed}",
+  },
+  "check.detail.ratioMatches": {
+    en: "{ratio} — matches requirement",
+    "zh-CN": "{ratio} — 符合要求",
+  },
+  "check.detail.ratioNoRestriction": {
+    en: "{ratio} (no restriction)",
+    "zh-CN": "{ratio}（无限制）",
+  },
+  "check.detail.dpi": {
+    en: "{dpi} DPI — most online uploads ignore DPI for digital images",
+    "zh-CN": "{dpi} DPI — 大多数在线上传会忽略数字图像的 DPI",
+  },
+  "check.detail.noDpi": {
+    en: "No DPI data — typical for digital images",
+    "zh-CN": "无 DPI 数据 — 数字图像通常如此",
+  },
+  "check.detail.locationFound": {
+    en: "GPS location data found — consider removing for privacy",
+    "zh-CN": "发现 GPS 位置数据 — 建议移除以保护隐私",
+  },
+  "check.detail.locationEntries": {
+    en: "{n} metadata entries found (no GPS)",
+    "zh-CN": "发现 {n} 项元数据（无 GPS）",
+  },
+  "check.detail.locationNone": {
+    en: "No metadata found",
+    "zh-CN": "未发现元数据",
+  },
+  "check.detail.imageCorrupt": {
+    en: "Could not read image properties. The file may be corrupted.",
+    "zh-CN": "无法读取图片属性。文件可能已损坏。",
+  },
+  "check.detail.pdfBasic": {
+    en: "Basic PDF checking: format and file size verified. Advanced PDF analysis (page count, dimensions) is coming in Phase 5.",
+    "zh-CN": "基础 PDF 检查：已验证格式和文件大小。高级 PDF 分析（页数、尺寸）将在后续阶段推出。",
+  },
+  "check.detail.pdfOrientationUnknown": {
+    en: "PDF page orientation cannot be determined in this version",
+    "zh-CN": "当前版本无法确定 PDF 页面方向",
+  },
+  "check.detail.pdfDimensionsUnknown": {
+    en: "PDF page dimensions require advanced parsing (coming in Phase 5)",
+    "zh-CN": "PDF 页面尺寸需要高级解析（后续阶段推出）",
+  },
+  // Recommendation messages
+  "check.rec.size": {
+    en: "Reduce file size to {max} or less",
+    "zh-CN": "将文件大小减小到 {max} 或更小",
+  },
+  "check.rec.rotatePortrait": {
+    en: "Rotate or crop to portrait orientation",
+    "zh-CN": "旋转或裁剪为纵向方向",
+  },
+  "check.rec.rotateLandscape": {
+    en: "Rotate or crop to landscape orientation",
+    "zh-CN": "旋转或裁剪为横向方向",
+  },
+  "check.rec.removeGps": {
+    en: "Remove GPS location data from image",
+    "zh-CN": "从图片中移除 GPS 位置数据",
+  },
+  "check.rec.width": {
+    en: "Resize image width to {max} px or less",
+    "zh-CN": "将图片宽度调整为 {max} px 或更小",
+  },
+  "check.rec.widthMin": {
+    en: "Image width must be at least {min} px",
+    "zh-CN": "图片宽度至少为 {min} px",
+  },
+  "check.rec.height": {
+    en: "Resize image height to {max} px or less",
+    "zh-CN": "将图片高度调整为 {max} px 或更小",
+  },
+  "check.rec.heightMin": {
+    en: "Image height must be at least {min} px",
+    "zh-CN": "图片高度至少为 {min} px",
+  },
+  // Tool labels in recommendations
+  "check.tool.compressImage": { en: "Compress image", "zh-CN": "压缩图片" },
+  "check.tool.resizeCrop": { en: "Resize & crop", "zh-CN": "调整与裁剪" },
+  "check.tool.imageCompressor": { en: "Image Compressor", "zh-CN": "图片压缩" },
+  "check.tool.imageResizer": { en: "Image Resizer", "zh-CN": "图片调整" },
+  "check.tool.removeMetadata": { en: "Remove metadata", "zh-CN": "移除元数据" },
+  "check.tool.metadataRemover": { en: "Metadata Remover", "zh-CN": "元数据移除" },
   "check.recommendations": { en: "Recommended Actions", "zh-CN": "建议操作" },
   "check.openTool": { en: "Open {tool}", "zh-CN": "打开 {tool}" },
   "check.important": {

@@ -8,11 +8,17 @@ interface ResultItem {
   label: string;
   status: ResultStatus;
   detail?: string;
+  detailParams?: Record<string, string>;
 }
 
 interface ResultSummaryProps {
   items: ResultItem[];
   className?: string;
+}
+
+function interpolate(template: string, params?: Record<string, string>): string {
+  if (!params) return template;
+  return template.replace(/\{(\w+)\}/g, (_, key) => params[key] ?? `{${key}}`);
 }
 
 export function ResultSummary({ items, className }: ResultSummaryProps) {
@@ -56,12 +62,14 @@ export function ResultSummary({ items, className }: ResultSummaryProps) {
         {items.map((item, i) => {
           const config = statusConfig[item.status];
           const Icon = config.icon;
+          const translatedLabel = t(item.label);
+          const translatedDetail = item.detail ? interpolate(t(item.detail), item.detailParams) : undefined;
           return (
             <li key={i} className="flex items-center justify-between px-4 py-3">
-              <span className="text-sm text-text-primary">{item.label}</span>
+              <span className="text-sm text-text-primary">{translatedLabel}</span>
               <div className="flex items-center gap-2">
-                {item.detail && (
-                  <span className="text-xs text-text-tertiary">{item.detail}</span>
+                {translatedDetail && (
+                  <span className="text-xs text-text-tertiary">{translatedDetail}</span>
                 )}
                 <span className={cn("flex items-center gap-1 text-sm font-medium", config.color)}>
                   <Icon className="h-4 w-4" />

@@ -238,7 +238,7 @@ export default function CheckFilePage() {
                   </p>
                   <p className="text-xs text-text-tertiary">
                     {formatBytes(fileSize ?? 0)} ·{" "}
-                    {fileType === "pdf" ? "PDF" : "Image"}
+                    {fileType === "pdf" ? "PDF" : t("check.typeImages")}
                   </p>
                 </div>
               </div>
@@ -289,10 +289,10 @@ export default function CheckFilePage() {
                     <p className="text-sm font-medium text-text-primary">
                       {fileName}
                     </p>
-                    <p className="text-xs text-text-tertiary">
-                      {formatBytes(fileSize ?? file.size)} ·{" "}
-                      {fileType === "pdf" ? "PDF" : "Image"}
-                    </p>
+                  <p className="text-xs text-text-tertiary">
+                    {formatBytes(fileSize ?? file.size)} ·{" "}
+                    {fileType === "pdf" ? "PDF" : t("check.typeImages")}
+                  </p>
                   </div>
                 </div>
                 <Button variant="ghost" size="sm" onClick={reset}>
@@ -305,7 +305,7 @@ export default function CheckFilePage() {
                   <CheckCircle2 className="mr-2 h-4 w-4" />
                   {t("check.allPassedDesc")}
                   {result.warningCount > 0 &&
-                    ` ${result.warningCount} minor suggestion(s) below.`}
+                    ` ${t("check.minorSuggestions").replace("{n}", String(result.warningCount))}`}
                 </Alert>
               ) : (
                 <Alert variant="warning" title={`${t("check.issuesFound")}${result.failCount}`}>
@@ -331,23 +331,30 @@ export default function CheckFilePage() {
                   {t("check.recommendations")}
                 </h3>
                 <ul className="mt-3 space-y-2">
-                  {result.recommendations.map((rec, idx) => (
-                    <li
-                      key={idx}
-                      className="flex items-start gap-2 text-sm text-primary-700"
-                    >
-                      <ArrowRight className="mt-0.5 h-4 w-4 shrink-0" />
-                      <span>
-                        <strong>{rec.toolLabel}:</strong> {rec.message}{" "}
-                        <Link
-                          href={rec.toolHref}
-                          className="underline hover:no-underline"
-                        >
-                          {t("check.openTool").replace("{tool}", rec.toolLabel)}
-                        </Link>
-                      </span>
-                    </li>
-                  ))}
+                  {result.recommendations.map((rec, idx) => {
+                    const toolLabel = t(rec.toolLabel);
+                    const message = t(rec.message).replace(
+                      /\{(\w+)\}/g,
+                      (_, key) => rec.messageParams?.[key] ?? `{${key}}`
+                    );
+                    return (
+                      <li
+                        key={idx}
+                        className="flex items-start gap-2 text-sm text-primary-700"
+                      >
+                        <ArrowRight className="mt-0.5 h-4 w-4 shrink-0" />
+                        <span>
+                          <strong>{toolLabel}:</strong> {message}{" "}
+                          <Link
+                            href={rec.toolHref}
+                            className="underline hover:no-underline"
+                          >
+                            {t("check.openTool").replace("{tool}", toolLabel)}
+                          </Link>
+                        </span>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             )}

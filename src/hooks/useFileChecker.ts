@@ -8,6 +8,7 @@ import {
   type CheckResult,
   type CheckRequirements,
 } from "@/lib/check-compliance";
+import { useT } from "@/i18n";
 
 type AppState =
   | "initial"
@@ -30,6 +31,7 @@ interface CheckerState {
 const MAX_FILE_SIZE = 30 * 1024 * 1024; // 30 MB
 
 export function useFileChecker() {
+  const t = useT();
   const [state, setState] = useState<CheckerState>({
     appState: "initial",
     file: null,
@@ -44,28 +46,31 @@ export function useFileChecker() {
   const stateRef = useRef(state);
   stateRef.current = state;
 
-  const selectFile = useCallback((file: File) => {
-    if (file.size > MAX_FILE_SIZE) {
+  const selectFile = useCallback(
+    (file: File) => {
+      if (file.size > MAX_FILE_SIZE) {
+        setState((prev) => ({
+          ...prev,
+          appState: "error",
+          error: t("error.fileTooLarge"),
+        }));
+        return;
+      }
+
+      const detectedType = detectFileType(file);
+
       setState((prev) => ({
         ...prev,
-        appState: "error",
-        error: `File is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum is ${MAX_FILE_SIZE / 1024 / 1024} MB.`,
+        appState: "file-selected",
+        file,
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: detectedType,
+        error: null,
       }));
-      return;
-    }
-
-    const detectedType = detectFileType(file);
-
-    setState((prev) => ({
-      ...prev,
-      appState: "file-selected",
-      file,
-      fileName: file.name,
-      fileSize: file.size,
-      fileType: detectedType,
-      error: null,
-    }));
-  }, []);
+    },
+    [t]
+  );
 
   const updateRequirements = useCallback(
     (partial: Partial<CheckRequirements>) => {
@@ -102,10 +107,10 @@ export function useFileChecker() {
         error:
           err instanceof Error
             ? err.message
-            : "An unexpected error occurred during the check.",
+            : t("error.unexpectedCheck"),
       }));
     }
-  }, []);
+  }, [t]);
 
   const reset = useCallback(() => {
     setState({

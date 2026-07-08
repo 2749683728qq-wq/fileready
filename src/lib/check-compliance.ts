@@ -3,6 +3,10 @@
  * Checks uploaded files against user-defined requirements.
  * Supports images (via loadImage) and basic PDF checks.
  * All processing happens in the browser — no upload to any server.
+ *
+ * NOTE: All user-facing strings in this module are translation keys.
+ * The UI layer must call t(key) to get the localized text, and substitute
+ * any {placeholders} using detailParams / messageParams.
  */
 
 import {
@@ -20,11 +24,16 @@ import { formatBytes, formatAspectRatio } from "@/lib/utils";
 export type CheckStatus = "pass" | "fail" | "warning" | "unknown";
 
 export interface CheckItem {
+  /** Translation key for the item label */
   label: string;
   status: CheckStatus;
+  /** Translation key for the item detail. May contain {placeholders}. */
   detail: string;
+  /** Values to interpolate into detail placeholders */
+  detailParams?: Record<string, string>;
   /** Optional link to a recommended tool */
   toolHref?: string;
+  /** Translation key for the tool button label */
   toolLabel?: string;
 }
 
@@ -41,8 +50,12 @@ export interface CheckResult {
 }
 
 export interface Recommendation {
+  /** Translation key for the recommendation message. May contain {placeholders}. */
   message: string;
+  /** Values to interpolate into message placeholders */
+  messageParams?: Record<string, string>;
   toolHref: string;
+  /** Translation key for the recommended tool name */
   toolLabel: string;
 }
 
@@ -136,9 +149,10 @@ export async function checkFileCompliance(
   // ---- File type check ----
   if (!fileType) {
     items.push({
-      label: "File type",
+      label: "check.item.fileType",
       status: "fail",
-      detail: `Unsupported file type (${file.type || "unknown"}). Only JPG, PNG, WebP, and PDF are supported.`,
+      detail: "check.detail.unsupportedType",
+      detailParams: { type: file.type || "unknown" },
     });
     return buildResult(items, recommendations);
   }
@@ -147,75 +161,90 @@ export async function checkFileCompliance(
 
   if (!requirements.allowedTypes.includes(fileType)) {
     items.push({
-      label: "File type",
+      label: "check.item.fileType",
       status: "fail",
-      detail: `${typeLabel} files are not allowed. Required: ${requirements.allowedTypes.join(" or ")}.`,
+      detail: "check.detail.typeNotAllowed",
+      detailParams: {
+        type: typeLabel,
+        required: requirements.allowedTypes.join(" / "),
+      },
     });
     return buildResult(items, recommendations);
   }
 
   items.push({
-    label: "File type",
+    label: "check.item.fileType",
     status: "pass",
-    detail: `${typeLabel} — allowed`,
+    detail: "check.detail.typeAllowed",
+    detailParams: { type: typeLabel },
   });
 
   // ---- File extension check ----
   const ext = file.name.split(".").pop()?.toLowerCase() || "";
   items.push({
-    label: "File extension",
+    label: "check.item.fileExtension",
     status: "pass",
-    detail: `.${ext}`,
+    detail: "check.detail.ext",
+    detailParams: { ext },
   });
 
   // ---- File size check ----
   if (file.size > requirements.maxSizeBytes) {
     items.push({
-      label: "File size",
+      label: "check.item.fileSize",
       status: "fail",
-      detail: `${formatBytes(file.size)} exceeds maximum ${formatBytes(requirements.maxSizeBytes)}`,
+      detail: "check.detail.sizeExceeds",
+      detailParams: {
+        size: formatBytes(file.size),
+        max: formatBytes(requirements.maxSizeBytes),
+      },
       toolHref: "/en/tools/image-compressor",
-      toolLabel: "Compress image",
+      toolLabel: "check.tool.compressImage",
     });
     recommendations.push({
-      message: `Reduce file size to ${formatBytes(requirements.maxSizeBytes)} or less`,
+      message: "check.rec.size",
+      messageParams: { max: formatBytes(requirements.maxSizeBytes) },
       toolHref: "/en/tools/image-compressor",
-      toolLabel: "Image Compressor",
+      toolLabel: "check.tool.imageCompressor",
     });
   } else {
     items.push({
-      label: "File size",
+      label: "check.item.fileSize",
       status: "pass",
-      detail: `${formatBytes(file.size)} — within ${formatBytes(requirements.maxSizeBytes)} limit`,
+      detail: "check.detail.sizeOk",
+      detailParams: {
+        size: formatBytes(file.size),
+        max: formatBytes(requirements.maxSizeBytes),
+      },
     });
   }
 
   // ---- Filename checks ----
   if (requirements.noSpacesInFilename && filenameHasSpaces(file.name)) {
     items.push({
-      label: "Filename (no spaces)",
+      label: "check.item.filenameSpaces",
       status: "warning",
-      detail: "Filename contains spaces. Some systems may reject it.",
+      detail: "check.detail.filenameHasSpaces",
     });
   } else {
     items.push({
-      label: "Filename (no spaces)",
+      label: "check.item.filenameSpaces",
       status: "pass",
-      detail: "No spaces in filename",
+      detail: "check.detail.filenameNoSpaces",
     });
   }
 
   if (requirements.noSpecialCharsInFilename && filenameHasSpecialChars(file.name)) {
     items.push({
-      label: "Filename (no special chars)",
+      label: "check.item.filenameSpecial",
       status: "warning",
-      detail: "Filename contains special characters. Rename to use only letters, numbers, hyphens, and underscores.",
+      detail: "check.detail.filenameHasSpecial",
     });
   } else {
     items.push({
-      label: "Filename (no special chars)",
+      label: "check.item.filenameSpecial",
       status: "pass",
-      detail: "No special characters in filename",
+      detail: "check.detail.filenameNoSpecial",
     });
   }
 
@@ -236,35 +265,35 @@ export async function checkFileCompliance(
       const isPortrait = meta.height >= meta.width;
       if (requirements.orientation === "portrait" && !isPortrait) {
         items.push({
-          label: "Orientation",
+          label: "check.item.orientation",
           status: "fail",
-          detail: `Landscape orientation detected — portrait required`,
+          detail: "check.detail.orientationWrongLandscape",
           toolHref: "/en/tools/image-resizer",
-          toolLabel: "Resize & crop",
+          toolLabel: "check.tool.resizeCrop",
         });
         recommendations.push({
-          message: "Rotate or crop to portrait orientation",
+          message: "check.rec.rotatePortrait",
           toolHref: "/en/tools/image-resizer",
-          toolLabel: "Image Resizer",
+          toolLabel: "check.tool.imageResizer",
         });
       } else if (requirements.orientation === "landscape" && isPortrait) {
         items.push({
-          label: "Orientation",
+          label: "check.item.orientation",
           status: "fail",
-          detail: `Portrait orientation detected — landscape required`,
+          detail: "check.detail.orientationWrongPortrait",
           toolHref: "/en/tools/image-resizer",
-          toolLabel: "Resize & crop",
+          toolLabel: "check.tool.resizeCrop",
         });
         recommendations.push({
-          message: "Rotate or crop to landscape orientation",
+          message: "check.rec.rotateLandscape",
           toolHref: "/en/tools/image-resizer",
-          toolLabel: "Image Resizer",
+          toolLabel: "check.tool.imageResizer",
         });
       } else {
         items.push({
-          label: "Orientation",
+          label: "check.item.orientation",
           status: "pass",
-          detail: isPortrait ? "Portrait" : "Landscape",
+          detail: isPortrait ? "check.detail.portrait" : "check.detail.landscape",
         });
       }
 
@@ -273,39 +302,46 @@ export async function checkFileCompliance(
         const currentRatio = formatAspectRatio(meta.width, meta.height);
         if (!requirements.allowedAspectRatios.includes(currentRatio)) {
           items.push({
-            label: "Aspect ratio",
+            label: "check.item.aspectRatio",
             status: "warning",
-            detail: `${currentRatio} — not in allowed ratios: ${requirements.allowedAspectRatios.join(", ")}`,
+            detail: "check.detail.ratioNotAllowed",
+            detailParams: {
+              ratio: currentRatio,
+              allowed: requirements.allowedAspectRatios.join(", "),
+            },
             toolHref: "/en/tools/image-resizer",
-            toolLabel: "Resize & crop",
+            toolLabel: "check.tool.resizeCrop",
           });
         } else {
           items.push({
-            label: "Aspect ratio",
+            label: "check.item.aspectRatio",
             status: "pass",
-            detail: `${currentRatio} — matches requirement`,
+            detail: "check.detail.ratioMatches",
+            detailParams: { ratio: currentRatio },
           });
         }
       } else {
         items.push({
-          label: "Aspect ratio",
+          label: "check.item.aspectRatio",
           status: "pass",
-          detail: `${formatAspectRatio(meta.width, meta.height)} (no restriction)`,
+          detail: "check.detail.ratioNoRestriction",
+          detailParams: { ratio: formatAspectRatio(meta.width, meta.height) },
         });
       }
 
       // DPI
       if (meta.dpi) {
         items.push({
-          label: "DPI information",
+          label: "check.item.dpi",
           status: "unknown",
-          detail: `${meta.dpi} DPI — most online uploads ignore DPI for digital images`,
+          detail: "check.detail.dpi",
+          detailParams: { dpi: String(meta.dpi) },
         });
       } else {
         items.push({
-          label: "DPI information",
+          label: "check.item.dpi",
           status: "unknown",
-          detail: "No DPI data — typical for digital images",
+          detail: "check.detail.noDpi",
         });
       }
 
@@ -313,37 +349,38 @@ export async function checkFileCompliance(
       if (metadataReport && metadataReport.totalEntries > 0) {
         const hasLocation = metadataReport.hasLocation;
         items.push({
-          label: "Location metadata",
+          label: "check.item.locationMetadata",
           status: hasLocation ? "warning" : "pass",
           detail: hasLocation
-            ? "GPS location data found — consider removing for privacy"
-            : `${metadataReport.totalEntries} metadata entries found (no GPS)`,
+            ? "check.detail.locationFound"
+            : "check.detail.locationEntries",
+          detailParams: hasLocation ? undefined : { n: String(metadataReport.totalEntries) },
           ...(hasLocation
             ? {
                 toolHref: "/en/tools/remove-image-metadata",
-                toolLabel: "Remove metadata",
+                toolLabel: "check.tool.removeMetadata",
               }
             : {}),
         });
         if (hasLocation) {
           recommendations.push({
-            message: "Remove GPS location data from image",
+            message: "check.rec.removeGps",
             toolHref: "/en/tools/remove-image-metadata",
-            toolLabel: "Metadata Remover",
+            toolLabel: "check.tool.metadataRemover",
           });
         }
       } else {
         items.push({
-          label: "Location metadata",
+          label: "check.item.locationMetadata",
           status: "pass",
-          detail: "No metadata found",
+          detail: "check.detail.locationNone",
         });
       }
     } catch {
       items.push({
-        label: "Image analysis",
+        label: "check.item.imageAnalysis",
         status: "fail",
-        detail: "Could not read image properties. The file may be corrupted.",
+        detail: "check.detail.imageCorrupt",
       });
     }
   }
@@ -351,21 +388,21 @@ export async function checkFileCompliance(
   // ---- PDF-specific checks ----
   if (fileType === "pdf") {
     items.push({
-      label: "PDF analysis",
+      label: "check.item.pdfAnalysis",
       status: "unknown",
-      detail: "Basic PDF checking: format and file size verified. Advanced PDF analysis (page count, dimensions) is coming in Phase 5.",
+      detail: "check.detail.pdfBasic",
     });
 
     items.push({
-      label: "Orientation",
+      label: "check.item.orientation",
       status: "unknown",
-      detail: "PDF page orientation cannot be determined in this version",
+      detail: "check.detail.pdfOrientationUnknown",
     });
 
     items.push({
-      label: "Dimensions",
+      label: "check.item.dimensions",
       status: "unknown",
-      detail: "PDF page dimensions require advanced parsing (coming in Phase 5)",
+      detail: "check.detail.pdfDimensionsUnknown",
     });
   }
 
@@ -386,66 +423,76 @@ function checkDimensions(
   // Width
   if (req.maxWidth > 0 && meta.width > req.maxWidth) {
     items.push({
-      label: "Image width",
+      label: "check.item.imageWidth",
       status: "fail",
-      detail: `${meta.width} px exceeds maximum ${req.maxWidth} px`,
+      detail: "check.detail.widthExceeds",
+      detailParams: { width: String(meta.width), max: String(req.maxWidth) },
       toolHref: "/en/tools/image-resizer",
-      toolLabel: "Resize image",
+      toolLabel: "check.tool.resizeCrop",
     });
     recommendations.push({
-      message: `Resize image width to ${req.maxWidth} px or less`,
+      message: "check.rec.width",
+      messageParams: { max: String(req.maxWidth) },
       toolHref: "/en/tools/image-resizer",
-      toolLabel: "Image Resizer",
+      toolLabel: "check.tool.imageResizer",
     });
   } else if (req.minWidth > 0 && meta.width < req.minWidth) {
     items.push({
-      label: "Image width",
+      label: "check.item.imageWidth",
       status: "fail",
-      detail: `${meta.width} px is below minimum ${req.minWidth} px`,
+      detail: "check.detail.widthBelow",
+      detailParams: { width: String(meta.width), min: String(req.minWidth) },
     });
     recommendations.push({
-      message: `Image width must be at least ${req.minWidth} px`,
+      message: "check.rec.widthMin",
+      messageParams: { min: String(req.minWidth) },
       toolHref: "/en/tools/image-resizer",
-      toolLabel: "Image Resizer",
+      toolLabel: "check.tool.imageResizer",
     });
   } else {
     items.push({
-      label: "Image width",
+      label: "check.item.imageWidth",
       status: "pass",
-      detail: `${meta.width} px`,
+      detail: "check.detail.widthOk",
+      detailParams: { width: String(meta.width) },
     });
   }
 
   // Height
   if (req.maxHeight > 0 && meta.height > req.maxHeight) {
     items.push({
-      label: "Image height",
+      label: "check.item.imageHeight",
       status: "fail",
-      detail: `${meta.height} px exceeds maximum ${req.maxHeight} px`,
+      detail: "check.detail.heightExceeds",
+      detailParams: { height: String(meta.height), max: String(req.maxHeight) },
       toolHref: "/en/tools/image-resizer",
-      toolLabel: "Resize image",
+      toolLabel: "check.tool.resizeCrop",
     });
     recommendations.push({
-      message: `Resize image height to ${req.maxHeight} px or less`,
+      message: "check.rec.height",
+      messageParams: { max: String(req.maxHeight) },
       toolHref: "/en/tools/image-resizer",
-      toolLabel: "Image Resizer",
+      toolLabel: "check.tool.imageResizer",
     });
   } else if (req.minHeight > 0 && meta.height < req.minHeight) {
     items.push({
-      label: "Image height",
+      label: "check.item.imageHeight",
       status: "fail",
-      detail: `${meta.height} px is below minimum ${req.minHeight} px`,
+      detail: "check.detail.heightBelow",
+      detailParams: { height: String(meta.height), min: String(req.minHeight) },
     });
     recommendations.push({
-      message: `Image height must be at least ${req.minHeight} px`,
+      message: "check.rec.heightMin",
+      messageParams: { min: String(req.minHeight) },
       toolHref: "/en/tools/image-resizer",
-      toolLabel: "Image Resizer",
+      toolLabel: "check.tool.imageResizer",
     });
   } else {
     items.push({
-      label: "Image height",
+      label: "check.item.imageHeight",
       status: "pass",
-      detail: `${meta.height} px`,
+      detail: "check.detail.heightOk",
+      detailParams: { height: String(meta.height) },
     });
   }
 
