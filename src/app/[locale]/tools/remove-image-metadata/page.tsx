@@ -334,10 +334,7 @@ export default function MetadataRemoverPage() {
               {t("metadata.help.what")}
             </h3>
             <p className="mt-1">
-              Metadata (also called EXIF data) is hidden information embedded in
-              image files by cameras and phones. It can include GPS coordinates,
-              camera make and model, serial numbers, date and time the photo was
-              taken, and software used to edit it.
+              {t("metadata.help.what")}
             </p>
           </div>
           <div>
@@ -345,10 +342,7 @@ export default function MetadataRemoverPage() {
               {t("metadata.help.how")}
             </h3>
             <p className="mt-1">
-              We redraw your image on a Canvas element in your browser and
-              export it as a new file. This process naturally strips all
-              embedded metadata without modifying the image content. The visual
-              quality of your image remains unchanged.
+              {t("metadata.help.how")}
             </p>
           </div>
         </div>

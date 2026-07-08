@@ -728,12 +728,12 @@ const metadata = {
   "metadata.aboutTitle": { en: "About image metadata", "zh-CN": "关于图片元数据" },
   "metadata.help.title": { en: "About image metadata", "zh-CN": "关于图片元数据" },
   "metadata.help.what": {
-    en: "Metadata (also called EXIF data) is hidden information embedded in image files by cameras and phones.",
-    "zh-CN": "元数据（也称为 EXIF 数据）是相机和手机嵌入图片文件中的隐藏信息。",
+    en: "Metadata (also called EXIF data) is hidden information embedded in image files by cameras and phones. It can include GPS coordinates, camera make and model, serial numbers, date and time the photo was taken, and software used to edit it.",
+    "zh-CN": "元数据（也称为 EXIF 数据）是相机和手机嵌入图片文件中的隐藏信息。它可能包含 GPS 坐标、相机品牌和型号、序列号、照片拍摄日期和时间，以及用于编辑照片的软件。",
   },
   "metadata.help.how": {
-    en: "We redraw your image on a Canvas element in your browser and export it as a new file. This process naturally strips all embedded metadata.",
-    "zh-CN": "我们在您的浏览器中将图片重新绘制到 Canvas 上，然后导出为新文件。此过程会自然地剥离所有嵌入的元数据。",
+    en: "We redraw your image on a Canvas element in your browser and export it as a new file. This process naturally strips all embedded metadata without modifying the image content. The visual quality of your image remains unchanged.",
+    "zh-CN": "我们在您的浏览器中将图片重新绘制到 Canvas 上，然后导出为新文件。此过程会自然地剥离所有嵌入的元数据，而不会修改图片内容。图片的视觉质量保持不变。",
   },
 };
 
