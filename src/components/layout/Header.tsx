@@ -32,9 +32,11 @@ function getSwitchHref(currentLocale: Locale): string {
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [switchHref, setSwitchHref] = useState<string>("");
   const t = useT();
   const locale = useLocale();
+  const [switchHref, setSwitchHref] = useState<string>(
+    locale === "zh-CN" ? "/en/" : "/zh-CN/"
+  );
 
   // Compute the switch href on mount and when locale changes.
   // We use useEffect + useState instead of direct DOM manipulation
