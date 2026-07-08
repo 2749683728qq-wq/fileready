@@ -7,19 +7,27 @@ import { useT, useLocale } from "@/i18n";
 import type { Locale } from "@/i18n";
 import { Logo } from "./Logo";
 
+// Read basePath at build time for client code (injected via next.config.ts env)
+const NEXT_PUBLIC_BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 function computeSwitchHref(fromLocale: Locale): string {
   if (typeof window === "undefined") {
-    return fromLocale === "zh-CN" ? "/en/" : "/zh-CN/";
+    const base = NEXT_PUBLIC_BASE_PATH;
+    return fromLocale === "zh-CN" ? `${base}/en/` : `${base}/zh-CN/`;
   }
   const targetLocale: Locale = fromLocale === "zh-CN" ? "en" : "zh-CN";
-  const clean = window.location.pathname.replace(/\/+$/, "") || "/";
+  const base = NEXT_PUBLIC_BASE_PATH;
+  const pathname = window.location.pathname;
+  // Remove trailing slashes and basePath prefix
+  const withoutBase = pathname.startsWith(base) ? pathname.slice(base.length) : pathname;
+  const clean = withoutBase.replace(/\/+$/, "") || "/";
   const prefix = fromLocale === "zh-CN" ? "/zh-CN" : "/en";
 
   if (clean.startsWith(prefix)) {
     const rest = clean.slice(prefix.length);
-    return `/${targetLocale}${rest}/`;
+    return `${base}/${targetLocale}${rest}/`;
   }
-  return `/${targetLocale}/`;
+  return `${base}/${targetLocale}/`;
 }
 
 export function Header() {
@@ -41,7 +49,7 @@ export function Header() {
     }
   }, [locale]);
 
-  const fallbackHref = locale === "zh-CN" ? "/en/" : "/zh-CN/";
+  const fallbackHref = locale === "zh-CN" ? `${NEXT_PUBLIC_BASE_PATH}/en/` : `${NEXT_PUBLIC_BASE_PATH}/zh-CN/`;
 
   const navItems = [
     {
