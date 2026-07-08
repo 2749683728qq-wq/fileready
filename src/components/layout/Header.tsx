@@ -7,12 +7,15 @@ import { useT, useLocale } from "@/i18n";
 import type { Locale } from "@/i18n";
 import { Logo } from "./Logo";
 
+// Read at module scope — inlined by Next.js at build time for static export
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 /** Get the switch-to URL based on current browser pathname. */
 function getSwitchHref(currentLocale: Locale): string {
   const targetLocale: Locale = currentLocale === "zh-CN" ? "en" : "zh-CN";
 
   if (typeof window === "undefined") {
-    return `/${targetLocale}/`;
+    return `${BASE_PATH}/${targetLocale}/`;
   }
 
   const pathname = window.location.pathname.replace(/\/+$/, "") || "/";
@@ -22,11 +25,11 @@ function getSwitchHref(currentLocale: Locale): string {
   const idx = pathname.indexOf(currentPrefix);
   if (idx !== -1) {
     const rest = pathname.slice(idx + currentPrefix.length);
-    return `/${targetLocale}${rest}/`;
+    return `${BASE_PATH}/${targetLocale}${rest}/`;
   }
 
   // Fallback: go to homepage of target locale
-  return `/${targetLocale}/`;
+  return `${BASE_PATH}/${targetLocale}/`;
 }
 
 export function Header() {
@@ -35,7 +38,7 @@ export function Header() {
   const t = useT();
   const locale = useLocale();
   const [switchHref, setSwitchHref] = useState<string>(
-    locale === "zh-CN" ? "/en/" : "/zh-CN/"
+    locale === "zh-CN" ? `${BASE_PATH}/en/` : `${BASE_PATH}/zh-CN/`
   );
 
   // Compute the switch href on mount and when locale changes.
