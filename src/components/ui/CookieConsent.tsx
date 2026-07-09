@@ -23,11 +23,19 @@ export function CookieConsent() {
   const accept = useCallback(() => {
     localStorage.setItem(STORAGE_KEY, "accepted");
     setStatus("accepted");
+    // Update GA consent to grant analytics
+    if (typeof window !== "undefined" && window.gtag) {
+      window.gtag("consent", "update", { analytics_storage: "granted" });
+    }
   }, []);
 
   const reject = useCallback(() => {
     localStorage.setItem(STORAGE_KEY, "rejected");
     setStatus("rejected");
+    // Ensure GA consent stays denied
+    if (typeof window !== "undefined" && window.gtag) {
+      window.gtag("consent", "update", { analytics_storage: "denied" });
+    }
   }, []);
 
   if (status !== "pending") return null;
