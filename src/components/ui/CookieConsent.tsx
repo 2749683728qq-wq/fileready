@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { ShieldCheck } from "lucide-react";
 import { useT } from "@/i18n";
 import { Button } from "@/components/ui";
@@ -9,36 +9,55 @@ type ConsentStatus = "pending" | "accepted" | "rejected";
 
 const STORAGE_KEY = "fua-cookie-consent";
 
-function getStoredConsent(): ConsentStatus {
-  if (typeof window === "undefined") return "pending";
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored === "accepted" || stored === "rejected") return stored;
-  return "pending";
-}
-
 export function CookieConsent() {
-  const [status, setStatus] = useState<ConsentStatus>(getStoredConsent);
+  const [status, setStatus] = useState<ConsentStatus>("pending");
+  const [mounted, setMounted] = useState(false);
   const t = useT();
 
-  const accept = useCallback(() => {
-    localStorage.setItem(STORAGE_KEY, "accepted");
+  useEffect(() => {
+    setMounted(true);
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored === "accepted" || stored === "rejected") {
+        setStatus(stored);
+      }
+    } catch {
+      // localStorage may be unavailable in some browsers
+    }
+  }, []);
+
+  const updateConsent = (value: "granted" | "denied") => {
+    if (typeof window !== "undefined" && typeof window.gtag === "function") {
+      try {
+        window.gtag("consent", "update", { analytics_storage: value });
+      } catch {
+        // ignore gtag errors
+      }
+    }
+  };
+
+  const handleAccept = () => {
+    try {
+      localStorage.setItem(STORAGE_KEY, "accepted");
+    } catch {
+      // ignore
+    }
     setStatus("accepted");
-    // Update GA consent to grant analytics
-    if (typeof window !== "undefined" && window.gtag) {
-      window.gtag("consent", "update", { analytics_storage: "granted" });
-    }
-  }, []);
+    updateConsent("granted");
+  };
 
-  const reject = useCallback(() => {
-    localStorage.setItem(STORAGE_KEY, "rejected");
+  const handleReject = () => {
+    try {
+      localStorage.setItem(STORAGE_KEY, "rejected");
+    } catch {
+      // ignore
+    }
     setStatus("rejected");
-    // Ensure GA consent stays denied
-    if (typeof window !== "undefined" && window.gtag) {
-      window.gtag("consent", "update", { analytics_storage: "denied" });
-    }
-  }, []);
+    updateConsent("denied");
+  };
 
-  if (status !== "pending") return null;
+  // Prevent hydration mismatch: don't render until mounted
+  if (!mounted || status !== "pending") return null;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border-default bg-surface-card p-4 shadow-lg sm:p-6">
@@ -55,10 +74,10 @@ export function CookieConsent() {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <Button variant="outline" size="sm" onClick={reject}>
+          <Button type="button" variant="outline" size="sm" onClick={handleReject}>
             {t("cookie.reject")}
           </Button>
-          <Button variant="primary" size="sm" onClick={accept}>
+          <Button type="button" variant="primary" size="sm" onClick={handleAccept}>
             {t("cookie.accept")}
           </Button>
         </div>
