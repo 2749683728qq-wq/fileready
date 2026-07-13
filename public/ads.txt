@@ -1,7 +1,1 @@
-# Google AdSense publisher declaration
-# Format: google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0
-#
-# Replace YOUR_PUBLISHER_ID below with your actual AdSense publisher ID
-# (the number after "pub-" in your AdSense code, e.g., pub-1234567890123456)
-#
-# google.com, pub-YOUR_PUBLISHER_ID, DIRECT, f08c47fec0942fa0
+google.com, pub-8888610121885542, DIRECT, f08c47fec0942fa0
