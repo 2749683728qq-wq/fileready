@@ -43,6 +43,8 @@ jobs:
         run: pnpm build
         env:
           NEXT_PUBLIC_SITE_URL: "https://fileready.vip"
+          NEXT_PUBLIC_ADSENSE_ENABLED: ${{ vars.ADSENSE_ENABLED || 'false' }}
+          NEXT_PUBLIC_ADSENSE_CLIENT_ID: ${{ vars.ADSENSE_CLIENT_ID || '' }}
 
       - name: 添加 .nojekyll 文件
         run: touch dist/.nojekyll

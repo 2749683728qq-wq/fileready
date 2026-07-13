@@ -7,4 +7,6 @@ interface Window {
     params?: Record<string, unknown>
   ) => void;
   dataLayer?: unknown[];
+  /** Google AdSense */
+  adsbygoogle?: Array<Record<string, unknown>>;
 }

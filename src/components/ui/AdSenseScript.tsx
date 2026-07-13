@@ -4,9 +4,13 @@ import Script from "next/script";
 import { useEffect, useState } from "react";
 
 /**
- * Loads the Google AdSense script globally.
- * Only runs in production when NEXT_PUBLIC_ADSENSE_ENABLED=true
- * and the user has accepted cookies.
+ * Google AdSense script loader.
+ *
+ * Only loads when NEXT_PUBLIC_ADSENSE_ENABLED="true" and user has accepted cookies.
+ * Uses the publisher ID from NEXT_PUBLIC_ADSENSE_CLIENT_ID.
+ *
+ * AdSense policy: no ads on pages with sensitive/restricted content.
+ * See: https://support.google.com/adsense/answer/1346295
  */
 export function AdSenseScript() {
   const [shouldLoad, setShouldLoad] = useState(false);
@@ -15,9 +19,13 @@ export function AdSenseScript() {
     const enabled = process.env.NEXT_PUBLIC_ADSENSE_ENABLED === "true";
     if (!enabled) return;
 
-    const consent = localStorage.getItem("fua-cookie-consent");
-    if (consent === "accepted") {
-      setShouldLoad(true);
+    try {
+      const consent = localStorage.getItem("fua-cookie-consent");
+      if (consent === "accepted") {
+        setShouldLoad(true);
+      }
+    } catch {
+      // localStorage unavailable
     }
   }, []);
 
@@ -28,20 +36,22 @@ export function AdSenseScript() {
 
   return (
     <>
-      {/* Google AdSense */}
+      {/* AdSense main script */}
       <Script
         async
         src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${clientId}`}
         crossOrigin="anonymous"
         strategy="afterInteractive"
+        onError={() => {
+          // Silently ignore AdSense load failures
+        }}
       />
-      {/* AdSense auto-ads setup */}
+      {/* Initialize ad units — auto ads handles placements */}
       <Script id="adsense-init" strategy="afterInteractive">
         {`
-          (adsbygoogle = window.adsbygoogle || []).push({
-            google_ad_client: "${clientId}",
-            enable_page_level_ads: true
-          });
+          try {
+            (window.adsbygoogle = window.adsbygoogle || []).push({});
+          } catch(e) {}
         `}
       </Script>
     </>
