@@ -51,6 +51,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full antialiased">
+      <head>
+        {/* Preconnect to Google Tag Manager for faster GA4 loading */}
+        <link rel="preconnect" href="https://www.googletagmanager.com" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+      </head>
       <body className="min-h-full">
         <PageLayout>{children}</PageLayout>
         <ToastContainer />

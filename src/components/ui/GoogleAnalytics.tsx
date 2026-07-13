@@ -17,8 +17,12 @@ export function GoogleAnalytics() {
   const [hasConsent, setHasConsent] = useState(false);
 
   useEffect(() => {
-    const consent = localStorage.getItem("fua-cookie-consent");
-    setHasConsent(consent === "accepted");
+    try {
+      const consent = localStorage.getItem("fua-cookie-consent");
+      setHasConsent(consent === "accepted");
+    } catch {
+      // localStorage unavailable
+    }
     setConsentReady(true);
   }, []);
 
@@ -33,26 +37,33 @@ export function GoogleAnalytics() {
         async
         src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`}
         strategy="afterInteractive"
+        onError={() => {
+          // Silently ignore gtag load failures (e.g., ad blockers, offline)
+        }}
       />
       <Script id="ga-init" strategy="afterInteractive">
         {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-
-          // Default consent: analytics denied until user accepts cookies
-          gtag('consent', 'default', {
-            'analytics_storage': 'denied',
-            'ad_storage': 'denied',
-            'ad_user_data': 'denied',
-            'ad_personalization': 'denied'
-          });
-
-          gtag('config', '${measurementId}', {
-            page_path: window.location.pathname,
-            anonymize_ip: true,
-            cookie_flags: 'SameSite=None;Secure'
-          });
+          (function(){
+            try {
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){window.dataLayer.push(arguments);}
+              window.gtag = gtag;
+              gtag('js', new Date());
+              gtag('consent', 'default', {
+                'analytics_storage': 'denied',
+                'ad_storage': 'denied',
+                'ad_user_data': 'denied',
+                'ad_personalization': 'denied'
+              });
+              gtag('config', '${measurementId}', {
+                page_path: window.location.pathname,
+                anonymize_ip: true,
+                cookie_flags: 'SameSite=None;Secure'
+              });
+            } catch(e) {
+              // Ignore gtag errors
+            }
+          })();
         `}
       </Script>
 
@@ -60,9 +71,13 @@ export function GoogleAnalytics() {
       {consentReady && hasConsent && (
         <Script id="ga-consent-grant">
           {`
-            gtag('consent', 'update', {
-              'analytics_storage': 'granted'
-            });
+            try {
+              if (typeof window.gtag === 'function') {
+                window.gtag('consent', 'update', {
+                  'analytics_storage': 'granted'
+                });
+              }
+            } catch(e) {}
           `}
         </Script>
       )}
