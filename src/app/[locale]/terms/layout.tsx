@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return generatePageMeta({
     title: meta.title,
     description: meta.desc,
-    path: `/${locale}/terms`,
+    path: `/${locale}/terms/`,
     locale: locale as "en" | "zh-CN",
   });
 }
